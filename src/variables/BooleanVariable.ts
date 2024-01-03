@@ -15,7 +15,7 @@ export class BooleanVariable extends Variable<boolean> {
         return newVar;
     }
 
-    protected override  __process(value: string): Result<boolean> {
+    protected override  __parse(value: string): Result<boolean> {
         const result = value.match(/^(?:(true|t|1)|(false|f|0))$/i);
 
         if (result)

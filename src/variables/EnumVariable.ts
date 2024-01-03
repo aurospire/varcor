@@ -34,7 +34,7 @@ export class EnumVariable<T extends string | never = never> extends Variable<T> 
         return newVar;
     }
 
-    protected override  __process(value: string): Result<T> {
+    protected override  __parse(value: string): Result<T> {
         let index: number;
 
         if (this.#insensitive)

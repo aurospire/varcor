@@ -14,4 +14,4 @@ console.log(d.toString());
 console.log(e.toString());
 console.log(f.toString())
 
-console.log(f.process('10'))
+console.log(f.parse('10'))

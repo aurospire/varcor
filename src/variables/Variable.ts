@@ -15,9 +15,9 @@ export class Variable<T = never> {
         this.#description = from instanceof Variable ? from.#description : (from?.description ?? []);
     }
 
-    process(value?: string | undefined): Result<T> {
+    parse(value?: string | undefined): Result<T> {
         if (value !== undefined)
-            return this.__process(value);
+            return this.__parse(value);
         else {
             if (this.#optional)
                 return Result.success(undefined) as Result<T>;
@@ -45,7 +45,7 @@ export class Variable<T = never> {
     }
 
 
-    protected __process(value: string): Result<T> {
+    protected __parse(value: string): Result<T> {
         return Result.failure('must never exist');
     }
 
@@ -127,11 +127,11 @@ class AggregateVariable<T> extends Variable<T> {
         return this.#variables.flatMap(v => v.description);
     }
 
-    protected __process(value: string): Result<T> {
+    protected __parse(value: string): Result<T> {
         const issues: string[] = [];
 
         for (const variable of this.#variables) {
-            const result = variable.process(value);
+            const result = variable.parse(value);
             if (result.success)
                 return result;
             else

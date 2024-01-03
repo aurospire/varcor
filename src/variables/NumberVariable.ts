@@ -28,7 +28,7 @@ export class NumberVariable extends Variable<number> {
         return newVar;
     }
 
-    protected override  __process(value: string): Result<number> {
+    protected override  __parse(value: string): Result<number> {
         const min = this.#min ?? -Infinity;
         const max = this.#max ?? Infinity;
 

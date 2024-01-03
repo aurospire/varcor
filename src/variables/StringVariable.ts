@@ -20,7 +20,7 @@ export class StringVariable extends Variable<string> {
         return newVar;
     }
 
-    protected override  __process(value: string): Result<string> {
+    protected override  __parse(value: string): Result<string> {
         if (this.#validate) {
             const result = value.match(this.#validate);
 
