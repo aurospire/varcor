@@ -16,7 +16,7 @@ export class Variable<T = never> {
     }
 
     process(value?: string | undefined): Result<T> {
-        if (value)
+        if (value !== undefined)
             return this.__process(value);
         else {
             if (this.#optional)
@@ -104,13 +104,15 @@ class AggregateVariable<T> extends Variable<T> {
             default: from?.default || variable?.default
         });
 
-        let result = this;
-
         if (from instanceof AggregateVariable)
-            result.#variables.push(...this.#variables);
+            this.#variables.push(...from.#variables);
 
-        if (variable)
-            result.#variables.push(variable);
+        if (variable) {
+            if (variable instanceof AggregateVariable)
+                this.#variables.push(...variable.#variables);
+            else
+                this.#variables.push(variable);
+        }
     }
 
     override get type(): string {
