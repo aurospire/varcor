@@ -1,4 +1,7 @@
+import { inspect } from "util";
 import { Result, Value } from "./Result";
+
+export type Infer<V> = V extends Variable<infer T> ? T : never;
 
 export class Variable<T = never> {
     #optional: boolean;
@@ -14,15 +17,14 @@ export class Variable<T = never> {
 
     process(value?: string | undefined): Result<T> {
         if (value)
-            return this.process(value);
+            return this.__process(value);
         else {
             if (this.#optional)
                 return Result.success(undefined) as Result<T>;
             else if (this.#default !== undefined)
                 return Result.success(this.#default) as Result<T>;
-
             else
-                return Result.failure('value is required');
+                return Result.failure('is required');
         }
     }
 
@@ -30,7 +32,7 @@ export class Variable<T = never> {
         return this.#optional;
     }
 
-    get defaultTo(): T | undefined {
+    get default(): T | undefined {
         return this.#default;
     }
 
@@ -44,7 +46,7 @@ export class Variable<T = never> {
 
 
     protected __process(value: string): Result<T> {
-        return Result.failure('should never exist');
+        return Result.failure('must never exist');
     }
 
     protected __clone(): Variable<T> {
@@ -57,21 +59,20 @@ export class Variable<T = never> {
 
     optional(): Variable<T | undefined> {
         const newVar = this.__clone();
-        newVar.#description = this.#description;
+        newVar.#optional = true;
+        newVar.#default = undefined;
         return newVar;
     }
 
-    default(value: T): Variable<T> {
+    defaultTo(value: T): Variable<T> {
         const newVar = this.__clone();
+        newVar.#optional = false;
         newVar.#default = value;
-        newVar.#description = this.#description;
         return newVar;
     }
 
     describe(value: string): Variable<T> {
         const newVar = this.__clone();
-        newVar.#optional = this.#optional;
-        newVar.#default = this.#default;
         newVar.#description = [...this.#description, value];
         return newVar;
     }
@@ -84,13 +85,13 @@ export class Variable<T = never> {
         return {
             type: this.type,
             optional: this.isOptional,
-            default: this.defaultTo,
+            default: this.default,
             description: this.description
         };
     }
 
     toString() {
-        console.log(this.__object());
+        return inspect(this.__object(), { depth: null, colors: true });
     }
 }
 
@@ -100,7 +101,7 @@ class AggregateVariable<T> extends Variable<T> {
     constructor(from?: Variable<T>, variable?: Variable<any>) {
         super({
             optional: from?.isOptional || variable?.isOptional || false,
-            default: from?.defaultTo || variable?.defaultTo
+            default: from?.default || variable?.default
         });
 
         let result = this;

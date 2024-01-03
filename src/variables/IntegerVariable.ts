@@ -1,36 +1,36 @@
 import { Result } from "./Result";
 import { Variable } from "./Variable";
 
-export class NumberVariable extends Variable<number> {
+export class IntegerVariable extends Variable<number> {
     #min?: number;
 
     #max?: number;
 
-    constructor(from?: NumberVariable) {
+    constructor(from?: IntegerVariable) {
         super(from);
         this.#min = (from ? from.#min : undefined);
         this.#max = (from ? from.#max : undefined);
     }
 
     override get type(): string {
-        return 'number';
+        return 'integer';
     }
 
-    min(value: number): NumberVariable {
+    min(value: number): IntegerVariable {
         const newVar = this.__clone();
-        newVar.#min = value;
+        newVar.#min = Math.ceil(value);
         return newVar;
     }
 
-    max(value: number): NumberVariable {
+    max(value: number): IntegerVariable {
         const newVar = this.__clone();
         newVar.#max = value;
         return newVar;
     }
 
     protected override  __process(value: string): Result<number> {
-        const min = this.#min ?? -Infinity;
-        const max = this.#max ?? Infinity;
+        const min = this.#min || -Infinity;
+        const max = this.#max || Infinity;
 
         let error: string = '';
 
@@ -41,18 +41,23 @@ export class NumberVariable extends Variable<number> {
         else
             error = `must be less than ${max}`;
 
-        const result = Number.parseFloat(value);
+        const result = value.match(/^(?:([0-9]+)|(?:0b([01]+))|(?:0x([0-9A-F]+)))$/i);
 
-        if (Number.isNaN(result))
-            return Result.failure('must be a number');
-        else if (result >= min && result <= max)
-            return Result.success(result);
-        else
-            return Result.failure(error);
+        if (!result)
+            return Result.failure('must be an integer');
+        else {
+            const integer = Number.parseInt(result[1] ?? result[2] ?? result[3], result[1] ? 10 : result[2] ? 2 : 16);
+
+            if (integer >= min && integer <= max)
+                return Result.success(integer);
+            else
+                return Result.failure(error);
+        }
+
     }
 
-    protected override  __clone(): NumberVariable {
-        return new NumberVariable(this);
+    protected override  __clone(): IntegerVariable {
+        return new IntegerVariable(this);
     }
 
     protected override __object(): Record<string, any> {
