@@ -4,7 +4,7 @@ const a = v.number().max(10.23).defaultTo(-100.2).optional();
 const b = v.integer().max(10).defaultTo(-100);
 const c = v.string().validate(/[A-Z]/).optional();
 const d = v.boolean();
-const e = v.enum()//.value('hello').value('goodbye');
+const e = v.enum().value('hello').value('goodbye');
 const f = a.or(b).or(c).or(d).or(e)
 
 console.log(a.toString());
@@ -14,4 +14,4 @@ console.log(d.toString());
 console.log(e.toString());
 console.log(f.toString())
 
-console.log(e.process('10'))
+console.log(f.process('10'))

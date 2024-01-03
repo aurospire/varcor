@@ -13,7 +13,7 @@ export class EnumVariable<T extends string | never = never> extends Variable<T> 
     }
 
     override get type(): string {
-        return `{${this.#items.join('|')}}`
+        return this.#items.map(i => `'${i}'`).join('|') || 'never'
     }
 
     insensitive(): Variable<T> {
