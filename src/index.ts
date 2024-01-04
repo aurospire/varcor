@@ -1,4 +1,4 @@
-import { Infer, Result, v } from "./variables";
+import { v } from "./variables";
 
 const a = v.number().max(10.23).defaultTo(-100.2).optional();
 const b = v.integer().max(10).defaultTo(-100);
