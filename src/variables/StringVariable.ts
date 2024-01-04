@@ -56,6 +56,6 @@ export class StringVariable extends Variable<string> {
     }
 
     protected override __object(): Record<string, any> {
-        return { ...super.__object(), validate: this.#validators };
+        return { ...super.__object(), validate: [...this.#validators] };
     }
 }

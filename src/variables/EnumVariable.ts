@@ -13,7 +13,7 @@ export class EnumVariable<T extends string | never = never> extends Variable<T> 
     }
 
     override get type(): string {
-        return this.#items.map(i => `'${i}'`).join('/') || 'never'
+        return this.#items.map(i => `'${i}'`).join('/') || 'never';
     }
 
     insensitive(): Variable<T> {
@@ -53,6 +53,6 @@ export class EnumVariable<T extends string | never = never> extends Variable<T> 
     }
 
     protected override __object(): Record<string, any> {
-        return { ...super.__object(), items: this.#items };
+        return { ...super.__object(), items: [...this.#items] };
     }
 }
