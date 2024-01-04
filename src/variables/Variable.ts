@@ -3,8 +3,6 @@ import { Result, Value } from "./Result";
 
 export type Infer<V> = V extends Variable<infer T> ? T : never;
 
-export type Transformer<I, O> = (value: I) => Result<O>;
-
 export class Variable<T = never> {
     #optional: boolean;
     #default?: T;
@@ -83,10 +81,6 @@ export class Variable<T = never> {
         return new AggregateVariable<T | S>(this, variable);
     }
 
-    transform<S>(transform: Transformer<T, S>, type?: string): Variable<S> {
-        return new TransformedVariable(undefined, { variable: this, function: transform, type });
-    }
-
     protected __object(): Record<string, any> {
         return {
             type: this.type,
@@ -145,43 +139,5 @@ class AggregateVariable<T> extends Variable<T> {
         }
 
         return Result.failure(issues);
-    }
-}
-
-type TransformConfig<T> = { variable: Variable<any>, function: Transformer<any, T>, type?: string; };
-
-class TransformedVariable<T> extends Variable<T> {
-    #transform: TransformConfig<T>;
-
-    constructor(from?: TransformedVariable<any>, transform?: TransformConfig<T>) {
-        super(from);
-
-        if (from) {
-            this.#transform = transform ?? from.#transform;
-        }
-        else {
-            if (!transform)
-                this.#transform = { variable: new Variable(), function: () => Result.failure('No Transformer supplied') };
-            else
-                this.#transform = transform;
-        }
-    }
-
-    override get type(): string {
-        return `(${this.#transform.variable.type} -> ${this.#transform.type ?? '?'})`;
-    }
-
-    protected override __clone(): Variable<T> {
-        return new TransformedVariable<T>(this);
-    }
-
-    protected override __parse(value: string): Result<T> {
-        const result = this.#transform.variable.parse(value);
-
-        return result.success ? this.#transform.function(result.value) : result;
-    }
-
-    protected __description(): string[] {
-        return [...this.#transform.variable.description, ...super.__description()];
     }
 }
