@@ -3,7 +3,7 @@ import { Variable } from "./Variable";
 
 export type StringValidator = (value: string) => Result<string>;
 
-const makeValidator = (regex: RegExp): StringValidator => value => {
+const validateRegex = (value: string, regex: RegExp) => {
     const result = value.match(regex);
 
     if (result)
@@ -13,7 +13,7 @@ const makeValidator = (regex: RegExp): StringValidator => value => {
 };
 
 export class StringVariable extends Variable<string> {
-    #validators: StringValidator[];
+    #validators: (StringValidator | RegExp)[];
 
     constructor(from?: StringVariable) {
         super(from);
@@ -27,7 +27,7 @@ export class StringVariable extends Variable<string> {
 
     validate(validator: StringValidator | RegExp): StringVariable {
         const newVar = this.__clone();
-        newVar.#validators.push(validator instanceof RegExp ? makeValidator(validator) : validator);
+        newVar.#validators.push(validator);
         return newVar;
     }
 
@@ -36,7 +36,7 @@ export class StringVariable extends Variable<string> {
             const issues: string[] = [];
 
             for (const validator of this.#validators) {
-                const result = validator(value);
+                const result = validator instanceof RegExp ? validateRegex(value, validator) : validator(value);
 
                 if (result.success)
                     return result;

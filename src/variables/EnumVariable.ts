@@ -13,7 +13,7 @@ export class EnumVariable<T extends string | never = never> extends Variable<T> 
     }
 
     override get type(): string {
-        return this.#items.map(i => `'${i}'`).join('|') || 'never'
+        return this.#items.map(i => `'${i}'`).join('/') || 'never'
     }
 
     insensitive(): Variable<T> {
@@ -45,7 +45,7 @@ export class EnumVariable<T extends string | never = never> extends Variable<T> 
         if (index !== -1)
             return Result.success(this.#items[index] as T);
         else
-            return Result.failure(this.#items.length === 0 ? `must never exist` : `must be of ${this.#items.join('|')}`);
+            return Result.failure(this.#items.length === 0 ? `must never exist` : `must be of ${this.type}`);
     }
 
     protected override  __clone(): EnumVariable<T> {
