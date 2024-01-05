@@ -1,8 +1,10 @@
 import * as v from './v'; export { v };
+export * from './Variable';
 export * from './BooleanVariable';
 export * from './DateVariable';
+export * from './EnumVariable';
 export * from './IntegerVariable';
 export * from './NumberVariable';
-export * from './Result';
 export * from './StringVariable';
-export * from './Variable';
+export * from './Result';
+export * from './Infer';

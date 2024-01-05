@@ -3,8 +3,8 @@ import { EnumVariable } from './EnumVariable';
 import { NumberVariable } from './NumberVariable';
 import { StringVariable } from './StringVariable';
 import { BooleanVariable } from './BooleanVariable';
-import { Infer } from './Variable';
 import { DateVariable } from './DateVariable';
+import { InferObject } from './Infer';
 
 const numberVar = () => new NumberVariable();
 const integerVar = () => new IntegerVariable();
@@ -20,5 +20,5 @@ export {
     booleanVar as boolean,
     dateVar as date,
     enumVar as enum,
-    Infer as infer
+    InferObject as infer
 };

@@ -1,8 +1,6 @@
 import { inspect } from "util";
 import { Result, Value } from "./Result";
 
-export type Infer<V> = V extends Variable<infer T> ? T : never;
-
 export class Variable<T = never> {
     #optional: boolean;
     #default?: T;
