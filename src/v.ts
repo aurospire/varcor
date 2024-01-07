@@ -1,10 +1,10 @@
-import { IntegerVariable } from './IntegerVariable';
-import { EnumVariable } from './EnumVariable';
-import { NumberVariable } from './NumberVariable';
-import { StringVariable } from './StringVariable';
-import { BooleanVariable } from './BooleanVariable';
-import { DateObjectVariable } from './DateObjectVariable';
-import { InferObject } from './Infer';
+import { IntegerVariable } from './variables/IntegerVariable';
+import { EnumVariable } from './variables/EnumVariable';
+import { NumberVariable } from './variables/NumberVariable';
+import { StringVariable } from './variables/StringVariable';
+import { BooleanVariable } from './variables/BooleanVariable';
+import { DateObjectVariable } from './variables/DateObjectVariable';
+import { InferObject } from './variables/Infer';
 
 const numberVar = () => new NumberVariable();
 const integerVar = () => new IntegerVariable();

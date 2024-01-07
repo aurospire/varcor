@@ -63,6 +63,10 @@ export class Variable<T = never> {
         return new AggregateVariable<T | S>(this, variable);
     }
 
+    transform<S>(transform: Transformer<T, S>, type?: string): Variable<S> {
+        return new TransformedVariable<S>(undefined, { from: this, transform, type });
+    }
+
     protected __object(): Record<string, any> {
         return {
             type: this.type,
@@ -121,7 +125,7 @@ class AggregateVariable<T> extends Variable<T> {
 
 export type Transformer<I, O> = (value: I) => Result<O>;
 
-type TransformData<I, O> = { var: Variable<I>, transform: Transformer<I, O>, type?: string; };
+type TransformData<I, O> = { from: Variable<I>, transform: Transformer<I, O>, type?: string; };
 
 class TransformedVariable<T> extends Variable<T> {
     #data: TransformData<any, any>;
@@ -134,10 +138,24 @@ class TransformedVariable<T> extends Variable<T> {
         else if (from)
             this.#data = from.#data;
         else
-            this.#data = { var: new Variable<any>(), transform: () => { throw new Error('Invalid transform'); } };
+            this.#data = { from: new Variable<any>(), transform: () => { throw new Error('Invalid transform'); } };
+    }
+
+    override get type(): string {
+        return `{${this.#data.from.type}->${this.#data.type ?? '?'}}`;
     }
 
     override parse(value?: string | undefined): Result<T> {
-        
+        if (value === undefined && (this.isOptional || this.default !== undefined)) {
+            return super.parse(value);
+        }
+
+        const result = this.#data.from.parse(value);
+
+        return this.#data.transform(result);
+    }
+
+    protected __object(): Record<string, any> {
+        return { ...super.__object, from: this.#data.from, type: this.#data.type };
     }
 }
