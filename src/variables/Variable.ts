@@ -4,13 +4,11 @@ import { Result, Value } from "./Result";
 export class Variable<T = never> {
     #optional: boolean;
     #default?: T;
-    #description: string[];
 
     constructor(from?: Variable<T> | { optional: boolean, default?: T, description?: string[]; }) {
 
         this.#optional = from instanceof Variable ? from.#optional : (from?.optional ?? false);
         this.#default = from instanceof Variable ? from.#default : (from?.default ?? undefined);
-        this.#description = from instanceof Variable ? from.#description : (from?.description ?? []);
     }
 
     parse(value?: string | undefined): Result<T> {
@@ -34,10 +32,6 @@ export class Variable<T = never> {
         return this.#default;
     }
 
-    get description(): string[] {
-        return this.__description();
-    }
-
     get type(): string {
         return 'never';
     }
@@ -49,10 +43,6 @@ export class Variable<T = never> {
 
     protected __clone(): Variable<T> {
         return new Variable<T>(this);
-    }
-
-    protected __description(): string[] {
-        return this.#description;
     }
 
     optional(): Variable<T | undefined> {
@@ -69,12 +59,6 @@ export class Variable<T = never> {
         return newVar;
     }
 
-    describe(value: string): Variable<T> {
-        const newVar = this.__clone();
-        newVar.#description = [...this.#description, value];
-        return newVar;
-    }
-
     else<S>(variable: Variable<S>): Variable<T | S> {
         return new AggregateVariable<T | S>(this, variable);
     }
@@ -84,7 +68,6 @@ export class Variable<T = never> {
             type: this.type,
             optional: this.isOptional,
             default: this.default,
-            description: this.description
         };
     }
 
@@ -121,10 +104,6 @@ class AggregateVariable<T> extends Variable<T> {
         return new AggregateVariable<T>(this);
     }
 
-    protected __description(): string[] {
-        return [...this.#variables.flatMap(v => v.description), ...super.__description()];
-    }
-
     protected __parse(value: string): Result<T> {
         const issues: string[] = [];
 
@@ -137,5 +116,28 @@ class AggregateVariable<T> extends Variable<T> {
         }
 
         return Result.failure(issues);
+    }
+}
+
+export type Transformer<I, O> = (value: I) => Result<O>;
+
+type TransformData<I, O> = { var: Variable<I>, transform: Transformer<I, O>, type?: string; };
+
+class TransformedVariable<T> extends Variable<T> {
+    #data: TransformData<any, any>;
+
+    constructor(from?: TransformedVariable<T>, data?: TransformData<any, any>) {
+        super(from);
+
+        if (data)
+            this.#data = data;
+        else if (from)
+            this.#data = from.#data;
+        else
+            this.#data = { var: new Variable<any>(), transform: () => { throw new Error('Invalid transform'); } };
+    }
+
+    override parse(value?: string | undefined): Result<T> {
+        
     }
 }
