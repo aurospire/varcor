@@ -1,12 +1,13 @@
 import { inspect } from "util";
 import { Result, Value } from "./Result";
 
+export type Transformer<I, O> = (value: I) => Result<O>;
+
 export class Variable<T = never> {
     #optional: boolean;
     #default?: T;
 
-    constructor(from?: Variable<T> | { optional: boolean, default?: T, description?: string[]; }) {
-
+    constructor(from?: Variable<T> | { optional: boolean, default?: T, }) {
         this.#optional = from instanceof Variable ? from.#optional : (from?.optional ?? false);
         this.#default = from instanceof Variable ? from.#default : (from?.default ?? undefined);
     }
@@ -122,8 +123,6 @@ class AggregateVariable<T> extends Variable<T> {
         return Result.failure(issues);
     }
 }
-
-export type Transformer<I, O> = (value: I) => Result<O>;
 
 type TransformData<I, O> = { from: Variable<I>, transform: Transformer<I, O>, type?: string; };
 
