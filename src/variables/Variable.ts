@@ -7,7 +7,7 @@ export class Variable<T = never> {
     #optional: boolean;
     #default?: T;
 
-    constructor(from?: Variable<T> | { optional: boolean, default?: T, }) {
+    constructor(from?: Variable<T> | { optional: boolean, default?: T }) {
         this.#optional = from instanceof Variable ? from.#optional : (from?.optional ?? false);
         this.#default = from instanceof Variable ? from.#default : (from?.default ?? undefined);
     }

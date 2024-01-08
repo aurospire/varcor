@@ -10,11 +10,6 @@ export class BooleanVariable extends Variable<boolean> {
         return 'boolean';
     }
 
-    validate(regexp: RegExp): BooleanVariable {
-        const newVar = this.__clone();
-        return newVar;
-    }
-
     protected override  __parse(value: string): Result<boolean> {
         const result = value.match(/^(?:(true|t|1)|(false|f|0))$/i);
 
