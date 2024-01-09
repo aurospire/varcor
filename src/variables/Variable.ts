@@ -7,7 +7,7 @@ export class Variable<T = never> {
     #optional: boolean;
     #default?: T;
 
-    constructor(from?: Variable<T> | { optional: boolean, default?: T }) {
+    constructor(from?: Variable<T> | { optional: boolean, default?: T; }) {
         this.#optional = from instanceof Variable ? from.#optional : (from?.optional ?? false);
         this.#default = from instanceof Variable ? from.#default : (from?.default ?? undefined);
     }
@@ -151,7 +151,7 @@ class TransformedVariable<T> extends Variable<T> {
 
         const result = this.#data.from.parse(value);
 
-        return this.#data.transform(result);
+        return result.success ? this.#data.transform(result.value) : result;
     }
 
     protected __object(): Record<string, any> {

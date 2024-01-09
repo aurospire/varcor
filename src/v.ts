@@ -12,7 +12,7 @@ const integerVar = () => new IntegerVariable();
 const stringVar = () => new StringVariable();
 const booleanVar = () => new BooleanVariable();
 const dateObjVar = () => new DateObjectVariable();
-const dateVar = () => new DateObjectVariable().transform(d => Result.success<Date>(new Date(d.year, d.month, d.day, d.hour, d.minute, d.second, d.ms)));
+const dateVar = () => new DateObjectVariable().transform(d => Result.success<Date>(new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.second, d.ms)));
 const enumVar = () => new EnumVariable();
 
 export {
