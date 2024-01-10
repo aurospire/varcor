@@ -34,6 +34,8 @@ export class DateObjectVariable extends Variable<DateObject> {
     }
 
     protected override  __parse(value: string): Result<DateObject> {
+        const issues: string[] = [];
+
         for (const format of this.#formats) {
             const match = value.match(format);
 
@@ -42,15 +44,14 @@ export class DateObjectVariable extends Variable<DateObject> {
 
                 const result = validateDateObject(groups);
 
-                if (Array.isArray(result))
-                    return Result.failure(result);
+                if (result.success)
+                    return result;
                 else
-                    return Result.success(result);
+                    issues.push(...result.issues);
             }
         }
 
-        console.log('FAILURE', value, this.#formats);
-        return Result.failure(`must be in a valid date format.`);
+        return Result.failure([...issues, `must be in a valid date format.`]);
     }
 
     protected override  __clone(): DateObjectVariable {
