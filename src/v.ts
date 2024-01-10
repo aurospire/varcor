@@ -16,15 +16,20 @@ const resolveDateType = (type?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz'
         switch (type) {
             case 'date':
                 regex = DateObjectVariable.date;
+                break;
             case 'time':
                 regex = DateObjectVariable.time;
+                break;
             case 'datetime':
                 regex = DateObjectVariable.datetime;
+                break;
             case 'timeTz':
                 regex = DateObjectVariable.timeTz;
+                break;
             default:
             case 'datetimeTz':
                 regex = DateObjectVariable.datetimeTz;
+                break;
         }
 
     return new DateObjectVariable(undefined, regex);
@@ -34,11 +39,11 @@ const numberVar = () => new NumberVariable();
 const integerVar = () => new IntegerVariable();
 const stringVar = () => new StringVariable();
 const booleanVar = () => new BooleanVariable();
-const dateObjVar = (from?: RegExp | 'date' | 'datetime' | 'datetimeTz' | 'time' | 'timeTz') => resolveDateType(from);
-const dateVar = (from?: RegExp | 'date' | 'datetime' | 'datetimeTz' | 'time' | 'timeTz') => resolveDateType(from).transform(d =>
+const enumVar = () => new EnumVariable();
+const dateObjVar = (from?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz') => resolveDateType(from);
+const dateVar = (from?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz') => resolveDateType(from).transform(d =>
     Result.success<Date>(new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.second, d.ms))
 );
-const enumVar = () => new EnumVariable();
 
 export {
     numberVar as number,
