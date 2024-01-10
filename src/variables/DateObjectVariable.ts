@@ -33,25 +33,18 @@ export class DateObjectVariable extends Variable<DateObject> {
         return 'Date';
     }
 
-    protected override  __parse(value: string): Result<DateObject> {
-        const issues: string[] = [];
-
+    protected override  __parse(value: string): Result<DateObject> {        
         for (const format of this.#formats) {
             const match = value.match(format);
 
             if (match) {
                 const groups = match.groups ?? {};
 
-                const result = validateDateObject(groups);
-
-                if (result.success)
-                    return result;
-                else
-                    issues.push(...result.issues);
+                return validateDateObject(groups);
             }
         }
 
-        return Result.failure([...issues, `must be in a valid date format.`]);
+        return Result.failure(`must be in a valid date format.`);
     }
 
     protected override  __clone(): DateObjectVariable {
