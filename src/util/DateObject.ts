@@ -1,3 +1,5 @@
+import { Result } from "./Result";
+
 export const timezone = '(?:(?<tzzero>Z)|(?:(?<tzhour>[+-]\\d{2}):(?<tzminute>\\d{2})))';
 
 export const time = '(?:(?<hour>\\d{2})\:(?<minute>\\d{2})(?:\:(?<second>\\d{2})(?:\.(?<ms>\\d{3}))?)?)';
@@ -66,7 +68,7 @@ const defaults = {
     ms: 0,
 } as const;
 
-export const validateDateObject = (from: DateObjectRaw): string[] | DateObject => {
+export const validateDateObject = (from: DateObjectRaw): Result<DateObject> => {
     const issues: string[] = [];
 
     const year = validateItem(issues, 'year', from.year, defaults.year, 0);
@@ -98,7 +100,7 @@ export const validateDateObject = (from: DateObjectRaw): string[] | DateObject =
             tz = { hour: tzhour, minute: tzminute };
     }
 
-    return (issues.length) ? issues : { year, month, day, hour, minute, second, ms, tz };
+    return (issues.length) ? Result.failure(issues) : Result.success({ year, month, day, hour, minute, second, ms, tz });
 
 };
 

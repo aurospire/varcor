@@ -1,5 +1,5 @@
 import { inspect } from "util";
-import { Result, Value } from "./Result";
+import { Result } from "@/util";
 
 export type Transformer<I, O> = (value: I) => Result<O>;
 
