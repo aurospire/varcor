@@ -7,12 +7,37 @@ import { DateObjectVariable } from './variables/DateObjectVariable';
 import { InferObject } from './variables/Infer';
 import { Result } from './variables';
 
+const resolveDateType = (type?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz'): DateObjectVariable => {
+    let regex: RegExp;
+
+    if (type instanceof RegExp)
+        regex = type;
+    else
+        switch (type) {
+            case 'date':
+                regex = DateObjectVariable.date;
+            case 'time':
+                regex = DateObjectVariable.time;
+            case 'datetime':
+                regex = DateObjectVariable.datetime;
+            case 'timeTz':
+                regex = DateObjectVariable.timeTz;
+            default:
+            case 'datetimeTz':
+                regex = DateObjectVariable.datetimeTz;
+        }
+
+    return new DateObjectVariable(undefined, regex);
+};
+
 const numberVar = () => new NumberVariable();
 const integerVar = () => new IntegerVariable();
 const stringVar = () => new StringVariable();
 const booleanVar = () => new BooleanVariable();
-const dateObjVar = () => new DateObjectVariable();
-const dateVar = () => new DateObjectVariable().transform(d => Result.success<Date>(new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.second, d.ms)));
+const dateObjVar = (from?: RegExp | 'date' | 'datetime' | 'datetimeTz' | 'time' | 'timeTz') => resolveDateType(from);
+const dateVar = (from?: RegExp | 'date' | 'datetime' | 'datetimeTz' | 'time' | 'timeTz') => resolveDateType(from).transform(d =>
+    Result.success<Date>(new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.second, d.ms))
+);
 const enumVar = () => new EnumVariable();
 
 export {

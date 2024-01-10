@@ -9,9 +9,9 @@ const date = '(?:(?<year>\\d{4})(?:-(?<month>\\d{2})(?:-(?<day>\\d{2}))?)?)';
 
 const datetime = `^${date}(?:[T ]${time})?$`;
 
-const timeAndTz = `${time}${timezone}`;
+const timeTz = `${time}${timezone}`;
 
-const datetimeAndTz = `^${date}(?:[T ]${timeAndTz}?)?$`;
+const datetimeTz = `^${date}(?:[T ]${timeTz}?)?$`;
 
 
 export type TimeZone = 'Z' | { hour: number; minute: number; };
@@ -102,16 +102,16 @@ export class DateObjectVariable extends Variable<DateObject> {
 
     static time = new RegExp(time, 'i');
 
-    static timeAndTz = new RegExp(time, 'i');
+    static timeTz = new RegExp(time, 'i');
 
     static datetime = new RegExp(datetime, 'i');
 
-    static datetimeAndTz = new RegExp(datetimeAndTz, 'i');
+    static datetimeTz = new RegExp(datetimeTz, 'i');
 
     constructor(from?: DateObjectVariable, ...formats: RegExp[]) {
         super(from);
 
-        this.#formats = formats.length ? formats : (from ? [...from.#formats] : [DateObjectVariable.datetimeAndTz]);
+        this.#formats = formats.length ? formats : (from ? [...from.#formats] : [DateObjectVariable.datetimeTz]);
     }
 
     format(regex: RegExp | RegExp[], clear: boolean = false): DateObjectVariable {
