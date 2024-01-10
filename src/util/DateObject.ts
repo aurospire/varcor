@@ -79,7 +79,7 @@ export const validateDateObject = (from: DateObjectRaw): Result<DateObject> => {
     const second = validateItem(issues, 'second', from.second, defaults.second, 0, 59);
     const ms = validateItem(issues, 'ms', from.ms, defaults.ms, 0, 999);
 
-    let tz: TimeZone | undefined;
+    let tz: TimeZone | undefined = undefined;
     if (from.tzzero) {
         if (from.tzzero.toLocaleUpperCase() === 'Z')
             tz = 'Z';
