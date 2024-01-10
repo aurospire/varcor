@@ -27,24 +27,63 @@ export type DateObject = {
     tz?: TimeZone;
 };
 
-const validateItem = (issues: string[], name: string, value: number, min: number, max?: number) => {
+const validateItem = (issues: string[], name: string, value: number | string | undefined, defaultTo: number, min: number, max?: number): number => {
+    if (typeof value === 'string')
+        value = Number.parseInt(value);
+    else if (value === undefined)
+        value = defaultTo;
+
     if (isNaN(value) || value < min || value > (max ?? Infinity) || !Number.isFinite(Math.abs(value)))
         issues.push(`.${name} must be ${max !== undefined ? `greater than ${min}` : `a number ${min}-${max}`}`);
+
+    return value || defaultTo;
 };
 
-export const validateDateObject = (d: DateObject): string[] | undefined => {
+export const validateDateObject = (d: {
+    year?: number | string;
+    month?: number | string;
+    day?: number | string;
+    hour?: number | string;
+    minute?: number | string;
+    second?: number | string;
+    ms?: number | string;
+    tzzero?: string;
+    tzhour?: number | string;
+    tzminute?: number | string;
+}
+): string[] | DateObject => {
     const issues: string[] = [];
 
-    validateItem(issues, 'year', d.year, 0);
-    validateItem(issues, 'month', d.month, 1, 12);
-    validateItem(issues, 'day', d.day, 1, monthDays(d.year, d.month));
-    validateItem(issues, 'hour', d.hour, 0, 23);
-    validateItem(issues, 'minute', d.hour, 0, 59);
-    validateItem(issues, 'second', d.hour, 0, 59);
-    validateItem(issues, 'ms', d.hour, 0, 999);
-};
+    const year = validateItem(issues, 'year', d.year, 2000, 0);
+    const month = validateItem(issues, 'month', d.month, 1, 1, 12);
+    const day = validateItem(issues, 'day', d.day, 1, 1, monthDays(year, month));
+    const hour = validateItem(issues, 'hour', d.hour, 0, 0, 23);
+    const minute = validateItem(issues, 'minute', d.minute, 0, 0, 59);
+    const second = validateItem(issues, 'second', d.second, 0, 0, 59);
+    const ms = validateItem(issues, 'ms', d.ms, 0, 0, 999);
 
-export const validateTimeZone = (value: TimeZone): string[] | undefined => {
+    let tz: TimeZone | undefined;
+    if (d.tzzero) {
+        if (d.tzzero.toLocaleUpperCase() === 'Z')
+            tz = 'Z';
+    }
+
+    if (d.tzhour) {
+        if (tz)
+            issues.push('.tz can only be Z or an offset');
+
+        const tzhour = validateItem(issues, 'tzhour', d.tzhour, 0, -14, 14);
+        const tzminute = validateItem(issues, 'tzminute', d.tzminute, 0, 0, 59);
+
+        const tzoffset = tzhour * 100 + (tzhour < 0 ? -tzminute : tzminute);
+
+        if (tzoffset < -1400 || tzoffset > +1400)
+            issues.push('.tz must be an offset between -14:00 and +14:00');
+        else
+            tz = { hour: tzhour, minute: tzminute };
+    }
+
+    return (issues.length) ? issues : { year, month, day, hour, minute, second, ms, tz };
 
 };
 
@@ -89,50 +128,28 @@ export class DateObjectVariable extends Variable<DateObject> {
 
     protected override  __parse(value: string): Result<DateObject> {
         for (const format of this.#formats) {
-            const result = value.match(format);
+            const match = value.match(format);
 
-            if (result) {
-                const groups = result.groups ?? {};
+            if (match) {
+                const groups = match.groups ?? {};
 
-                const year = Number.parseInt(groups.year ?? '0');
-                const month = Number.parseInt(groups.month ?? '1');
-                const day = Number.parseInt(groups.day ?? '1');
-                const hour = Number.parseInt(groups.hour ?? '0');
-                const minute = Number.parseInt(groups.minute ?? '0');
-                const second = Number.parseInt(groups.second ?? '0');
-                const ms = Number.parseInt(groups.ms ?? '0');
-                const tzzero = groups.tzzero;
-                const tzhour = Number.parseInt(groups.tzhour) || undefined;
-                const tzminute = Number.parseInt(groups.tzminute) || undefined;
+                const result = validateDateObject(groups);
 
-                const issues: string[] = [];
-
-                let tz: TimeZone;
-
-                if (tzzero && (tzhour || tzminute))
-                    issues.push('.tz must be Z or an offset');
-                else {
-                    if (tzzero)
-                        tz = tzzero;
-                }
-
-                const dateObject: DateObject = {};
-
-                if (issues.length);
-                return Result.failure(issues);
+                if (Array.isArray(result))
+                    return Result.failure(result);
                 else
-                return Result.success({ year, month, day, hour, minute, second, ms });
+                    return Result.success(result);
+            }
         }
-    }
 
         return Result.failure(`must be in a valid date format.`);
     }
 
     protected override  __clone(): DateObjectVariable {
-    return new DateObjectVariable(this);
-}
+        return new DateObjectVariable(this);
+    }
 
-    protected __object(): Record < string, any > {
-    return { ...super.__object(), formats: [...this.#formats] };
-}
+    protected __object(): Record<string, any> {
+        return { ...super.__object(), formats: [...this.#formats] };
+    }
 }
