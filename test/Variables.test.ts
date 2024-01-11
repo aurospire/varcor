@@ -1,5 +1,6 @@
 import { DateObject } from "@/util";
 import { Result, StringValidator, Variable, v } from "@/variables";
+import { z } from "zod";
 
 describe('Variable', () => {
     it('should test immutability', () => {
@@ -214,7 +215,7 @@ describe('EnumVariable', () => {
 describe('DateObjectVariable', () => {
     const v1 = v.dateObject();
 
-    it('should parse valid date objects in default format', () => {        
+    it('should parse valid date objects in default format', () => {
         expect(v1.parse('2022-01-09T11:12:34.939')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 11, minute: 12, second: 34, ms: 939 }));
         expect(v1.parse('2022-01-09 11:12:34.939')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 11, minute: 12, second: 34, ms: 939 }));
 
@@ -233,7 +234,7 @@ describe('DateObjectVariable', () => {
 
     it('should parse valid date objects in custom format', () => {
         const customFormat = /^(?<year>\d{4})\-(?<month>\d{2})\-(?<day>\d{2}) (?<hour>\d{2}):(?<minute>\d{2})$/;
-        
+
         const v2 = v1.format(customFormat, true);
 
         expect(v2.parse('2022-01-09 12:30')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 12, minute: 30 }));
@@ -273,5 +274,76 @@ describe('DateVariable', () => {
         expect(v0.parse('2022-01-32').success).toEqual(false);
         expect(v0.parse('2022-01-09 25:30').success).toEqual(false);
         expect(v0.parse('2022-01-09 12:30:70').success).toEqual(false);
+    });
+});
+
+describe('JsonVariable', () => {
+    const validJsonString = '{"name": "John", "age": 25}';
+    const invalidJsonString = 'invalid-json-string';
+
+    describe('jsonVar', () => {
+        it('should parse valid JSON string without validator', () => {
+            const v1 = v.json();
+
+            expect(v1.parse(validJsonString)).toEqual(Result.success(JSON.parse(validJsonString)));
+        });
+
+        it('should fail to parse invalid JSON string without validator', () => {
+            const v2 = v.json();
+
+            expect(v2.parse(invalidJsonString).success).toEqual(false);
+        });
+
+        it('should parse valid JSON string with custom validator', () => {
+            const validator = (data: any) => {
+                if (data && data.name && typeof data.age === 'number') {
+                    return Result.success(data);
+                } else {
+                    return Result.failure('Invalid JSON structure');
+                }
+            };
+
+            const v3 = v.json(validator);
+
+            expect(v3.parse(validJsonString)).toEqual(Result.success(JSON.parse(validJsonString)));
+        });
+
+        it('should fail to parse invalid JSON string with custom validator', () => {
+            const validator = (data: any) => {
+                if (data && data.name && typeof data.age === 'number') {
+                    return Result.success(data);
+                } else {
+                    return Result.failure('Invalid JSON structure');
+                }
+            };
+
+            const v4 = v.json(validator);
+
+            expect(v4.parse(invalidJsonString).success).toEqual(false);
+        });
+    });
+
+    describe('tsonVar', () => {
+        it('should parse valid JSON string with ZodType validator', () => {
+            const zodType = z.object({
+                name: z.string(),
+                age: z.number(),
+            });
+
+            const v5 = v.tson(zodType);
+
+            expect(v5.parse(validJsonString)).toEqual(Result.success(JSON.parse(validJsonString)));
+        });
+
+        it('should fail to parse invalid JSON string with ZodType validator', () => {
+            const zodType = z.object({
+                name: z.string(),
+                age: z.number(),
+            });
+
+            const v6 = v.tson(zodType);
+
+            expect(v6.parse(invalidJsonString).success).toEqual(false);
+        });
     });
 });
