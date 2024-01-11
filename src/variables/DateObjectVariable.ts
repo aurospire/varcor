@@ -5,15 +5,15 @@ import { Variable } from "./Variable";
 export class DateObjectVariable extends Variable<DateObject> {
     #formats: RegExp[];
 
-    static date = new RegExp(date);
+    static date = new RegExp(`^${date}$`);
 
-    static time = new RegExp(time, 'i');
+    static time = new RegExp(`^${time}$`, 'i');
 
-    static timeTz = new RegExp(timeTz, 'i');
+    static timeTz = new RegExp(`^${timeTz}$`, 'i');
 
-    static datetime = new RegExp(datetime, 'i');
+    static datetime = new RegExp(`^${datetime}$`, 'i');
 
-    static datetimeTz = new RegExp(datetimeTz, 'i');
+    static datetimeTz = new RegExp(`^${datetimeTz}$`, 'i');
 
     constructor(from?: DateObjectVariable, ...formats: RegExp[]) {
         super(from);

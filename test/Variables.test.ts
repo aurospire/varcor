@@ -248,14 +248,13 @@ describe('DateObjectVariable', () => {
     });
 
     it('should ensure date objects in "date" format', () => {
-        // const v4 = v.dateObject('date');
+        const v4 = v.dateObject('date');
 
-        // console.log(v4.parse('2022'));
-        // // expect(v4.parse('2022')).toEqual(DateObject.from({ year: 2022 }));
-        // // expect(v4.parse('2022-01')).toEqual(DateObject.from({ year: 2022, month: 1 }));
-        // expect(v4.parse('2022-01-09')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9 }));
+        expect(v4.parse('2022')).toEqual(DateObject.from({ year: 2022 }));
+        expect(v4.parse('2022-01')).toEqual(DateObject.from({ year: 2022, month: 1 }));
+        expect(v4.parse('2022-01-09')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9 }));
 
-        // expect(v4.parse('2022-01-09 12:30:45').success).toEqual(false);
+        expect(v4.parse('2022-01-09 12:30:45').success).toEqual(false);
     });
 
 });
@@ -269,7 +268,6 @@ describe('DateVariable', () => {
     });
 
     it('should fail to parse invalid date objects', () => {
-        console.log(v0.parse('invalid'));
         expect(v0.parse('invalid').success).toEqual(false);
         expect(v0.parse('2022-13-09').success).toEqual(false);
         expect(v0.parse('2022-01-32').success).toEqual(false);

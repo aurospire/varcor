@@ -10,13 +10,18 @@ export const datetime = `^${date}(?:[T ]${time})?$`;
 
 export const timeTz = `${time}${timezone}`;
 
-export const datetimeTz = `^${date}(?:[T ]${timeTz}?)?$`;
+export const datetimeTz = `${date}(?:[T ]${timeTz}?)?`;
 
 const leapYear = (year: number): number => ((year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0)) ? 1 : 0;
 
 //                    J   F   M   A   M   J   J   A   S   O   N   D
 const regularDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
+const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+
+const monthMap: Record<string, number> = Object.fromEntries(monthNames.flatMap((value, index) => {
+    return [[value, index + 1], [value.substring(0, 3), index + 1]];
+}));
 const monthDays = (year: number, month: number) => (regularDays[month - 1] ?? 30) + leapYear(year);
 
 
@@ -72,7 +77,8 @@ export const validateDateObject = (from: DateObjectRaw): Result<DateObject> => {
     const issues: string[] = [];
 
     const year = validateItem(issues, 'year', from.year, defaults.year, 0);
-    const month = validateItem(issues, 'month', from.month, defaults.month, 1, 12);
+    const monthString = typeof from.month === 'string' ? monthMap[from.month.toLocaleUpperCase()] : undefined;
+    const month = validateItem(issues, 'month', monthString ?? from.month, defaults.month, 1, 12);
     const day = validateItem(issues, 'day', from.day, defaults.day, 1, monthDays(year, month));
     const hour = validateItem(issues, 'hour', from.hour, defaults.hour, 0, 23);
     const minute = validateItem(issues, 'minute', from.minute, defaults.minute, 0, 59);
