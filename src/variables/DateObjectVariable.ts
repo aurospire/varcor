@@ -33,7 +33,7 @@ export class DateObjectVariable extends Variable<DateObject> {
         return 'Date';
     }
 
-    protected override  __parse(value: string): Result<DateObject> {        
+    protected override  __parse(value: string): Result<DateObject> {
         for (const format of this.#formats) {
             const match = value.match(format);
 
