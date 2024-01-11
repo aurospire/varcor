@@ -1,4 +1,4 @@
-import { Result } from "./Result";
+import { Result } from "@/util";
 import { Variable } from "./Variable";
 
 export class EnumVariable<T extends string | never = never> extends Variable<T> {

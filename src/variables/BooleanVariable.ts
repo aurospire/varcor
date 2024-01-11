@@ -1,4 +1,4 @@
-import { Result } from "./Result";
+import { Result } from "@/util";
 import { Variable } from "./Variable";
 
 export class BooleanVariable extends Variable<boolean> {
@@ -8,11 +8,6 @@ export class BooleanVariable extends Variable<boolean> {
 
     override get type(): string {
         return 'boolean';
-    }
-
-    validate(regexp: RegExp): BooleanVariable {
-        const newVar = this.__clone();
-        return newVar;
     }
 
     protected override  __parse(value: string): Result<boolean> {
