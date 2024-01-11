@@ -25,6 +25,9 @@
         "test": "jest --config test/jest.config.ts",
         "vigil": "nodemon -e ts,js,tsx,jsx,json --watch src --watch 'package*.json' --watch test --exec 'tsc -p . && jest --config test/jest.config.ts || exit 1'"
     },
+    "dependencies": {
+        "zod": "^3.22.4"
+    },
     "devDependencies": {
         "@types/jest": "^29.5.11",
         "@types/node": "^20.10.6",
