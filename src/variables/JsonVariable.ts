@@ -1,7 +1,12 @@
 import { Result } from "@/util";
 import { Variable } from "./Variable";
 
-export class JsonVariable<T> extends Variable<T> {
+export type JsonValidator<T> = (data: any) => Result<T>;
+
+export class JsonVariable<T = any> extends Variable<T> {
+
+    #validator?: JsonValidator<T>;
+
     constructor(from?: JsonVariable<T>) {
         super(from);
     }
@@ -10,11 +15,17 @@ export class JsonVariable<T> extends Variable<T> {
         return 'Json';
     }
 
+    validate<S>(validator: JsonValidator<S>): JsonVariable<S> {
+        const newVar: JsonVariable<S> = this.__clone() as any;
+        newVar.#validator = validator;
+        return newVar;
+    }
+
     protected override  __parse(value: string): Result<T> {
         try {
-            const result = JSON.parse(value);
+            const data = JSON.parse(value);
 
-            return Result.success(result as T);
+            return this.#validator?.(data) ?? Result.success(data as T);
         }
         catch (error: any) {
             console.log(error);
