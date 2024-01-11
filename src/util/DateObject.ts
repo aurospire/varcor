@@ -111,5 +111,35 @@ export const validateDateObject = (from: DateObjectRaw): Result<DateObject> => {
 };
 
 export const DateObject = Object.seal({
-    from: (value: DateObjectRaw) => validateDateObject(value)
+    from: (value: DateObjectRaw) => validateDateObject(value),
+    toISO: (value: DateObject): string => {
+        let result = '';
+        result += value.year.toFixed(0).padStart(4, '0');
+        result += value.month.toFixed(0).padStart(2, '0');
+        result += value.day.toFixed(0).padStart(2, '0');
+
+        result += 'T';
+        result += value.hour.toFixed(0).padStart(2, '0');
+        result += value.minute.toFixed(0).padStart(2, '0');
+        result += value.second.toFixed(0).padStart(2, '0');
+        result += value.ms.toFixed(0).padStart(3, '0');
+
+        if (value.tz) {
+            if (typeof value.tz === 'string')
+                result += value.tz;
+            else {
+                const { hour, minute } = value.tz;
+
+                if (hour + minute === 0)
+                    result += 'Z';
+                else {
+                    result += (hour < 0 ? '-' : '+');
+                    result += Math.abs(hour).toFixed(0).padStart(2, '0');
+                    result += minute.toFixed(0).padStart(2, '0');
+                }
+            }
+        }
+
+        return result;
+    }
 });

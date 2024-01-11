@@ -261,7 +261,7 @@ describe('DateObjectVariable', () => {
 });
 
 describe('DateVariable', () => {
-    const v0 = v.date(); // Using the v.date alias
+    const v0 = v.jsdate(); // Using the v.date alias
 
     it('should parse valid date objects', () => {
         expect(v0.parse('2022-01-09')).toEqual(Result.success(new Date(2022, 0, 9, 0, 0, 0, 0)));

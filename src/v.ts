@@ -8,6 +8,8 @@ import { InferObject } from './variables/Infer';
 import { Result } from './variables';
 import { JsonValidator, JsonVariable } from './variables/JsonVariable';
 import { ZodType, ZodTypeDef } from 'zod';
+import { DateTime } from 'luxon';
+import { DateObject } from './util';
 
 const resolveDateType = (type?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz'): DateObjectVariable => {
     let regex: RegExp;
@@ -38,14 +40,25 @@ const resolveDateType = (type?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz'
 };
 
 const numberVar = () => new NumberVariable();
+
 const integerVar = () => new IntegerVariable();
+
 const stringVar = () => new StringVariable();
+
 const booleanVar = () => new BooleanVariable();
+
 const enumVar = () => new EnumVariable();
+
 const dateObjVar = (from?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz') => resolveDateType(from);
+
 const dateVar = (from?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz') => resolveDateType(from).transform(d =>
+    Result.success<DateTime>(DateTime.fromISO(DateObject.toISO(d)))
+);
+
+const jsdateVar = (from?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz') => resolveDateType(from).transform(d =>
     Result.success<Date>(new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.second, d.ms))
 );
+
 const jsonVar = <T = any>(validator?: JsonValidator<T>) => validator ? new JsonVariable<T>().validate(validator) : new JsonVariable<T>();
 
 const tsonVar = <Output = any, Def extends ZodTypeDef = ZodTypeDef, Input = Output>(type: ZodType<Output, Def, Input>) => new JsonVariable<Output>().validate(data => {
@@ -63,7 +76,7 @@ export {
     stringVar as string,
     booleanVar as boolean,
     dateObjVar as dateObject,
-    dateVar as date,
+    jsdateVar as jsdate,
     enumVar as enum,
     jsonVar as json,
     tsonVar as tson,
