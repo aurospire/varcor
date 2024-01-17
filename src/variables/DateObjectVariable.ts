@@ -5,20 +5,10 @@ import { Variable } from "./Variable";
 export class DateObjectVariable extends Variable<DateObject> {
     #formats: RegExp[];
 
-    static date = new RegExp(`^${date}$`);
-
-    static time = new RegExp(`^${time}$`, 'i');
-
-    static timeTz = new RegExp(`^${timeTz}$`, 'i');
-
-    static datetime = new RegExp(`^${datetime}$`, 'i');
-
-    static datetimeTz = new RegExp(`^${datetimeTz}$`, 'i');
-
     constructor(from?: DateObjectVariable, ...formats: RegExp[]) {
         super(from);
 
-        this.#formats = formats.length ? formats : (from ? [...from.#formats] : [DateObjectVariable.datetimeTz]);
+        this.#formats = formats.length ? formats : (from ? [...from.#formats] : [DateObject.regex.datetimeTz]);
     }
 
     format(regex: RegExp | RegExp[], clear: boolean = false): DateObjectVariable {
@@ -35,13 +25,10 @@ export class DateObjectVariable extends Variable<DateObject> {
 
     protected override  __parse(value: string): Result<DateObject> {
         for (const format of this.#formats) {
-            const match = value.match(format);
+            const result = DateObject.parse(value, format);
 
-            if (match) {
-                const groups = match.groups ?? {};
-
-                return DateObject.from(groups);
-            }
+            if (result.success)
+                return result;
         }
 
         return Result.failure(`must be in a valid date format.`);

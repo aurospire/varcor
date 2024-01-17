@@ -28,7 +28,6 @@ export class JsonVariable<T = any> extends Variable<T> {
             return this.#validator?.(data) ?? Result.success(data as T);
         }
         catch (error: any) {
-            console.log(error);
             return Result.failure(error.message);
         }
     }

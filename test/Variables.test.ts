@@ -213,15 +213,15 @@ describe('EnumVariable', () => {
 });
 
 describe('DateObjectVariable', () => {
-    const v1 = v.dateObject();
+    const v1 = v.dateobject();
 
     it('should parse valid date objects in default format', () => {
         expect(v1.parse('2022-01-09T11:12:34.939')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 11, minute: 12, second: 34, ms: 939 }));
         expect(v1.parse('2022-01-09 11:12:34.939')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 11, minute: 12, second: 34, ms: 939 }));
 
-        expect(v1.parse('2022-01-09 11:12Z')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 11, minute: 12, tzzero: 'Z' }));
-        expect(v1.parse('2022-01-09 11:12:34Z')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 11, minute: 12, second: 34, tzzero: 'Z' }));
-        expect(v1.parse('2022-01-09 11:12:34.939Z')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 11, minute: 12, second: 34, ms: 939, tzzero: 'Z' }));
+        expect(v1.parse('2022-01-09 11:12Z')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 11, minute: 12, tzutc: 'Z' }));
+        expect(v1.parse('2022-01-09 11:12:34Z')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 11, minute: 12, second: 34, tzutc: 'Z' }));
+        expect(v1.parse('2022-01-09 11:12:34.939Z')).toEqual(DateObject.from({ year: 2022, month: 1, day: 9, hour: 11, minute: 12, second: 34, ms: 939, tzutc: 'Z' }));
     });
 
     it('should fail to parse invalid date objects', () => {
@@ -249,7 +249,7 @@ describe('DateObjectVariable', () => {
     });
 
     it('should ensure date objects in "date" format', () => {
-        const v4 = v.dateObject('date');
+        const v4 = v.dateobject('date');
 
         expect(v4.parse('2022')).toEqual(DateObject.from({ year: 2022 }));
         expect(v4.parse('2022-01')).toEqual(DateObject.from({ year: 2022, month: 1 }));

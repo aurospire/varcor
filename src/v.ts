@@ -19,20 +19,20 @@ const resolveDateType = (type?: RegExp | DateType): DateObjectVariable => {
     else
         switch (type) {
             case 'date':
-                regex = DateObjectVariable.date;
+                regex = DateObject.regex.date;
                 break;
             case 'time':
-                regex = DateObjectVariable.time;
+                regex = DateObject.regex.time;
                 break;
             case 'datetime':
-                regex = DateObjectVariable.datetime;
+                regex = DateObject.regex.datetime;
                 break;
             case 'timeTz':
-                regex = DateObjectVariable.timeTz;
+                regex = DateObject.regex.timeTz;
                 break;
             default:
             case 'datetimeTz':
-                regex = DateObjectVariable.datetimeTz;
+                regex = DateObject.regex.datetimeTz;
                 break;
         }
 
@@ -51,12 +51,13 @@ const enumVar = () => new EnumVariable();
 
 const dateObjVar = (from?: RegExp | DateType) => resolveDateType(from);
 
-const dateVar = (from?: RegExp | DateType) => resolveDateType(from).transform(d =>
-    Result.success<DateTime>(DateTime.fromISO(DateObject.toISO(d)))
-);
-
 const jsdateVar = (from?: RegExp | DateType) => resolveDateType(from).transform(d =>
     Result.success<Date>(new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.second, d.ms))
+);
+
+
+const dateVar = (from?: RegExp | DateType) => resolveDateType(from).transform(d =>
+    Result.success<DateTime>(DateTime.fromISO(DateObject.toISO(d)))
 );
 
 const jsonVar = <T = any>(validator?: JsonValidator<T>) => validator ? new JsonVariable<T>().validate(validator) : new JsonVariable<T>();
@@ -75,7 +76,7 @@ export {
     integerVar as integer,
     stringVar as string,
     booleanVar as boolean,
-    dateObjVar as dateObject,
+    dateObjVar as dateobject,
     jsdateVar as jsdate,
     dateVar as date,
     enumVar as enum,
