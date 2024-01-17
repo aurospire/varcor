@@ -31,7 +31,7 @@ const regex = Object.seal({
     timeTz: makeRegex(timeTz),
     datetime: makeRegex(datetime),
     datetimeTz: makeRegex(datetimeTz),
-    resolve: (from: DateType | RegExp): RegExp => {
+    resolve: (from?: DateType | RegExp): RegExp => {
         if (from instanceof RegExp)
             return from;
         else
@@ -41,6 +41,7 @@ const regex = Object.seal({
                 case 'timeTz': return makeRegex(timeTz);
                 case 'datetime': return makeRegex(datetime);
                 case 'datetimeTz': return makeRegex(datetimeTz);
+                default: return makeRegex(datetimeTz);
             }
     }
 } as const);

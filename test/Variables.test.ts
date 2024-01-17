@@ -107,7 +107,7 @@ describe('IntegerVariable', () => {
     it('should parse valid integers', () => {
         expect(v1.parse('123')).toEqual(Result.success(123));
         expect(v1.parse('0b1101')).toEqual(Result.success(13)); // Binary representation
-        expect(v1.parse('0x1A')).toEqual(Result.success(26)); // Hexadecimal representation
+        expect(v1.parse('0x1A')).toEqual(Result.success(26));   // Hexadecimal representation
     });
 
     it('should fail to parse invalid integers', () => {
@@ -184,8 +184,8 @@ describe('EnumVariable', () => {
         const v1 = v.enum().value('red').value('green').value('blue');
 
         expect(v1.parse('red')).toEqual(Result.success('red'));
-        expect(v1.parse('GREEN').success).toEqual(false); // Case-sensitive by default
-        expect(v1.parse('Blue').success).toEqual(false); // Case-sensitive by default        
+        expect(v1.parse('GREEN').success).toEqual(false);   // Case-sensitive by default
+        expect(v1.parse('Blue').success).toEqual(false);    // Case-sensitive by default        
     });
 
     it('should fail to parse invalid enum values', () => {
@@ -257,7 +257,6 @@ describe('DateObjectVariable', () => {
 
         expect(v4.parse('2022-01-09 12:30:45').success).toEqual(false);
     });
-
 });
 
 describe('DateVariable', () => {
