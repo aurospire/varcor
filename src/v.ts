@@ -9,9 +9,9 @@ import { Result } from './variables';
 import { JsonValidator, JsonVariable } from './variables/JsonVariable';
 import { ZodType, ZodTypeDef } from 'zod';
 import { DateTime } from 'luxon';
-import { DateObject } from './util';
+import { DateObject, DateType } from './util';
 
-const resolveDateType = (type?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz'): DateObjectVariable => {
+const resolveDateType = (type?: RegExp | DateType): DateObjectVariable => {
     let regex: RegExp;
 
     if (type instanceof RegExp)
@@ -49,13 +49,13 @@ const booleanVar = () => new BooleanVariable();
 
 const enumVar = () => new EnumVariable();
 
-const dateObjVar = (from?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz') => resolveDateType(from);
+const dateObjVar = (from?: RegExp | DateType) => resolveDateType(from);
 
-const dateVar = (from?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz') => resolveDateType(from).transform(d =>
+const dateVar = (from?: RegExp | DateType) => resolveDateType(from).transform(d =>
     Result.success<DateTime>(DateTime.fromISO(DateObject.toISO(d)))
 );
 
-const jsdateVar = (from?: RegExp | 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz') => resolveDateType(from).transform(d =>
+const jsdateVar = (from?: RegExp | DateType) => resolveDateType(from).transform(d =>
     Result.success<Date>(new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.second, d.ms))
 );
 
@@ -77,6 +77,7 @@ export {
     booleanVar as boolean,
     dateObjVar as dateObject,
     jsdateVar as jsdate,
+    dateVar as date,
     enumVar as enum,
     jsonVar as json,
     tsonVar as tson,

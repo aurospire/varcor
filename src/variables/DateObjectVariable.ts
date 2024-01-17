@@ -1,4 +1,4 @@
-import { DateObject, date, datetime, datetimeTz, time, timeTz, validateDateObject, Result } from "@/util";
+import { DateObject, date, datetime, datetimeTz, time, timeTz, Result } from "@/util";
 import { Variable } from "./Variable";
 
 
@@ -40,7 +40,7 @@ export class DateObjectVariable extends Variable<DateObject> {
             if (match) {
                 const groups = match.groups ?? {};
 
-                return validateDateObject(groups);
+                return DateObject.from(groups);
             }
         }
 
