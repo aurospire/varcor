@@ -1,3 +1,3 @@
 export * from './SettingsError';
 export * from './Settings';
-export * from './Objects';
+export * from '../data/DataObject';

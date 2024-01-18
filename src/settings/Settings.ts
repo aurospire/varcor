@@ -1,7 +1,7 @@
 import { Result } from "../util";
-import { Variable } from "../variables";
+import { Variable, VariableObject } from "../variables";
 import { SettingsError, SettingsIssues } from "./SettingsError";
-import { VariableObject, DataObject } from "./Objects";
+import { DataObject } from "@/data";
 
 export type SettingsResults<T extends VariableObject> = {
     [K in keyof T]: T[K] extends Variable<infer U> ? Result<U> : never;
@@ -23,12 +23,12 @@ export class Settings<V extends VariableObject> {
 
         for (const [key, variable] of Object.entries(this.#variables)) {
             const value = data[key];
-    
+
             const result = variable.parse(value);
-    
+
             results[key] = result;
         }
-    
+
         return results;
     }
 

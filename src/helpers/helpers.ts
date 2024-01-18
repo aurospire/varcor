@@ -9,7 +9,9 @@ import { ZodType, ZodTypeDef } from 'zod';
 import { DateTime } from 'luxon';
 import { DateObject, DateType, Result } from '@/util';
 import { Settings, SettingsValues } from '@/settings/Settings';
-import { VariableObject } from "@/settings/Objects";
+import { VariableObject } from '..';
+import { Data } from '@/data';
+
 
 
 const numberVar = () => new NumberVariable();
@@ -50,6 +52,8 @@ const tsonVar = <Output = any, Def extends ZodTypeDef = ZodTypeDef, Input = Outp
 
 const settings = <V extends VariableObject>(variables: V): Settings<V> => new Settings<V>(variables);
 
+const data = () => new Data();
+
 export {
     numberVar as number,
     integerVar as integer,
@@ -61,6 +65,7 @@ export {
     enumVar as enum,
     jsonVar as json,
     tsonVar as tson,
+    data,
     settings,
     SettingsValues as infer
 };
