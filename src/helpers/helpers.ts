@@ -1,15 +1,15 @@
-import { IntegerVariable } from './variables/IntegerVariable';
-import { EnumVariable } from './variables/EnumVariable';
-import { NumberVariable } from './variables/NumberVariable';
-import { StringVariable } from './variables/StringVariable';
-import { BooleanVariable } from './variables/BooleanVariable';
-import { DateObjectVariable } from './variables/DateObjectVariable';
-import { InferObject } from './variables/Infer';
-import { Result } from './variables';
-import { JsonValidator, JsonVariable } from './variables/JsonVariable';
+import { IntegerVariable } from '@/variables/IntegerVariable';
+import { EnumVariable } from '@/variables/EnumVariable';
+import { NumberVariable } from '@/variables/NumberVariable';
+import { StringVariable } from '@/variables/StringVariable';
+import { BooleanVariable } from '@/variables/BooleanVariable';
+import { DateObjectVariable } from '@/variables/DateObjectVariable';
+import { JsonValidator, JsonVariable } from '@/variables/JsonVariable';
 import { ZodType, ZodTypeDef } from 'zod';
 import { DateTime } from 'luxon';
-import { DateObject, DateType } from './util';
+import { DateObject, DateType, Result } from '@/util';
+import { Settings, SettingsValues } from '@/settings/Settings';
+import { VariableObject } from "@/settings/Objects";
 
 
 const numberVar = () => new NumberVariable();
@@ -28,7 +28,7 @@ const resolveDateType = (from?: RegExp | DateType): DateObjectVariable => new Da
 const dateObjVar = (from?: RegExp | DateType) => resolveDateType(from);
 
 const jsdateVar = (from?: RegExp | DateType) => resolveDateType(from).transform(d =>
-    Result.success<Date>(new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.second, d.ms))
+    Result.success<Date>(DateTime.fromISO(DateObject.toISO(d)).toJSDate())
 );
 
 
@@ -48,6 +48,8 @@ const tsonVar = <Output = any, Def extends ZodTypeDef = ZodTypeDef, Input = Outp
         return Result.failure(result.error.issues.map(issue => `${issue.path}: ${issue.message}`));
 });
 
+const settings = <V extends VariableObject>(variables: V): Settings<V> => new Settings<V>(variables);
+
 export {
     numberVar as number,
     integerVar as integer,
@@ -59,5 +61,6 @@ export {
     enumVar as enum,
     jsonVar as json,
     tsonVar as tson,
-    InferObject as infer
+    settings,
+    SettingsValues as infer
 };

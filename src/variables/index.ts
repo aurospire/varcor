@@ -1,4 +1,3 @@
-import * as v from '../v'; export { v };
 export * from './Variable';
 export * from './BooleanVariable';
 export * from './DateObjectVariable';
@@ -6,5 +5,3 @@ export * from './EnumVariable';
 export * from './IntegerVariable';
 export * from './NumberVariable';
 export * from './StringVariable';
-export * from '../util/Result';
-export * from './Infer';
