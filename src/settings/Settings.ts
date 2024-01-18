@@ -1,7 +1,7 @@
 import { Result } from "../util";
 import { Variable, VariableObject } from "../variables";
 import { SettingsError, SettingsIssues } from "./SettingsError";
-import { DataObject } from "@/data";
+import { DataObjectBuilder, DataObject } from "@/data";
 
 export type SettingsResults<T extends VariableObject> = {
     [K in keyof T]: T[K] extends Variable<infer U> ? Result<U> : never;
@@ -18,7 +18,10 @@ export class Settings<V extends VariableObject> {
         this.#variables = variables;
     }
 
-    parseResults(data: DataObject): SettingsResults<V> {
+    parseResults(data: DataObject | DataObjectBuilder): SettingsResults<V> {
+        if (data instanceof DataObjectBuilder)
+            data = data.toDataObject();
+
         const results: any = {};
 
         for (const [key, variable] of Object.entries(this.#variables)) {
@@ -32,14 +35,7 @@ export class Settings<V extends VariableObject> {
         return results;
     }
 
-    filterIssues(results: SettingsResults<V>): SettingsIssues[] {
-        return Object
-            .entries(results)
-            .filter(([key, result]) => !result.success)
-            .map(([key, result]) => ({ key, issues: result.issues }));
-    }
-
-    parseValues(data: DataObject): SettingsValues<V> {
+    parseValues(data: DataObject | DataObjectBuilder): SettingsValues<V> {
         const results = this.parseResults(data);
 
         const errors = this.filterIssues(results);
@@ -52,5 +48,12 @@ export class Settings<V extends VariableObject> {
                 .entries(results)
                 .map(([key, result]) => [key, result.value])
         ) as any;
+    }
+
+    filterIssues(results: SettingsResults<V>): SettingsIssues[] {
+        return Object
+            .entries(results)
+            .filter(([key, result]) => !result.success)
+            .map(([key, result]) => ({ key, issues: result.issues }));
     }
 }

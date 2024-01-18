@@ -10,7 +10,7 @@ import { DateTime } from 'luxon';
 import { DateObject, DateType, Result } from '@/util';
 import { Settings, SettingsValues } from '@/settings/Settings';
 import { VariableObject } from '..';
-import { Data } from '@/data';
+import { DataObjectBuilder } from '@/data';
 
 
 
@@ -52,7 +52,26 @@ const tsonVar = <Output = any, Def extends ZodTypeDef = ZodTypeDef, Input = Outp
 
 const settings = <V extends VariableObject>(variables: V): Settings<V> => new Settings<V>(variables);
 
-const data = () => new Data();
+const data = Object.seal({
+    new: () => new DataObjectBuilder(),
+    env: () => new DataObjectBuilder().addEnv(),
+    obj: (data: Record<string, any>) => new DataObjectBuilder().addObject(data),
+    strings: (data: Record<string, any>) => new DataObjectBuilder().addObject(data),
+    json: (data: string) => new DataObjectBuilder().addJson(data)
+});
+
+const vars = Object.seal({
+    number: numberVar,
+    integer: integerVar,
+    string: stringVar,
+    boolean: booleanVar,
+    dateobject: dateObjVar,
+    jsdate: jsdateVar,
+    date: dateVar,
+    enum: enumVar,
+    json: jsonVar,
+    tson: tsonVar,
+});
 
 export {
     numberVar as number,
@@ -65,6 +84,7 @@ export {
     enumVar as enum,
     jsonVar as json,
     tsonVar as tson,
+    vars as var,
     data,
     settings,
     SettingsValues as infer
