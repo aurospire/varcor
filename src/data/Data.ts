@@ -26,6 +26,10 @@ export class Data {
         return this.importDataObject(data);
     }
 
+    importJson(json: string): Data {
+        return this.importObject(JSON.parse(json));
+    }
+
     export(): DataObject {
         return { ...this.#data };
     }
