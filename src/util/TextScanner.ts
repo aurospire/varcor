@@ -45,10 +45,14 @@ export class TextScanner {
     }
 
     get current(): string {
+        return this.peek();
+    }
+
+    peek(offset: number = 0): string {
         return this.#state.data.charAt(this.#state.location.position);
     }
 
-    get isEnd(): boolean {
+    get isTextEnd(): boolean {
         return this.#state.location.position === this.#state.data.length;
     }
 
@@ -134,18 +138,19 @@ export class TextScanner {
     }
 
 
-    is(value: string | string[] | Set<string> | RegExp | ((value: string) => boolean)): boolean {
-        if (typeof value === 'string')
-            return this.current === value;
-        else if (Array.isArray(value))
-            return value.includes(this.current);
-        else if (value instanceof Set)
-            return value.has(this.current);
-        else if (value instanceof RegExp)
-            return this.current.match(value) !== null;
-
+    is(check: boolean | string | string[] | Set<string> | RegExp | ((value: string, scanner: TextScanner) => boolean)): boolean {
+        if (typeof check === 'boolean')
+            return check;
+        else if (typeof check === 'string')
+            return this.current === check;
+        else if (check instanceof RegExp)
+            return this.current.match(check) !== null;
+        else if (Array.isArray(check))
+            return check.includes(this.current);
+        else if (check instanceof Set)
+            return check.has(this.current);
         else
-            return value(this.current);
+            return check(this.current, this);
     }
 
     get isUpper() {
@@ -182,13 +187,13 @@ export class TextScanner {
 
 
     consume(): TextScanner {
-        if (this.isEnd) return this;
+        if (this.isTextEnd) return this;
 
         const position = this.position;
 
-        const current = this.current;
+        const current = this.peek();
 
-        const next = this.#state.data.charAt(position + 1);
+        const next = this.peek(1);
 
         const newLine = current === '\n' || (current === '\r' && next !== '\n');
 
@@ -207,44 +212,51 @@ export class TextScanner {
         }
     }
 
+    consumeIf(check: boolean | string | string[] | Set<string> | RegExp | ((value: string, scanner: TextScanner) => boolean)): TextScanner {
+        if (typeof check !== 'boolean')
+            check = this.is(check);
 
-    consumeIf(value: boolean | string | string[] | Set<string> | RegExp | ((value: string) => boolean)): TextScanner {
-        if (typeof value !== 'boolean')
-            value = this.is(value);
-
-        return value ? this.consume() : this;
+        return check ? this.consume() : this;
     }
 
-    consumeIfUpper(): TextScanner {
-        return this.isUpper ? this.consume() : this;
+
+    skipWhile(check: boolean | string | string[] | Set<string> | RegExp | ((value: string, scanner: TextScanner) => boolean)): TextScanner {
+        let scanner: TextScanner = this;
+
+        while (scanner.is(check))
+            scanner = scanner.consume();
+
+        return scanner;
     }
 
-    consumeIfLower(): TextScanner {
-        return this.isLower ? this.consume() : this;
+    skipWhitespace(includeLineEnd: boolean = false): TextScanner {
+        const regex = includeLineEnd ? /[ \t\r\n]/ : /[ \t]/;
+
+        let scanner: TextScanner = this;
+
+        while (scanner.current.match(regex))
+            scanner = scanner.consume();
+
+        return scanner;
     }
 
-    consumeIfLetter(): TextScanner {
-        return this.isLetter ? this.consume() : this;
+    skipToLineEnd(): TextScanner {
+        let scanner: TextScanner = this;
+
+        while (!scanner.current.match(/[\r\n]/))
+            scanner = scanner.consume();
+
+        return scanner;
     }
 
-    consumeIfDigit(): TextScanner {
-        return this.isDigit ? this.consume() : this;
-    }
+    skipLineEnd(complete: boolean = true): TextScanner {
+        const current = this.peek(0);
 
-    consumeIfHex(): TextScanner {
-        return this.isHex ? this.consume() : this;
-    }
+        const next = this.peek(1);
 
-    consumeIfLetterOrDigit(): TextScanner {
-        return this.isLetterOrDigit ? this.consume() : this;
-    }
-
-    consumeIfWhitespace(): TextScanner {
-        return this.isWhitespace ? this.consume() : this;
-    }
-
-    consumeIfLineEnd(): TextScanner {
-        return this.isLineEnd ? this.consume() : this;
+        return this.isLineEnd
+            ? this.consume().consumeIf(complete && current === '\r' && next === '\n')
+            : this;
     }
 
 
