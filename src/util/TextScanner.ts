@@ -4,6 +4,11 @@ export type TextLocation = {
     column: number;
 };
 
+export type TextElement = {
+    value: string;
+    location: TextLocation;
+};
+
 export type TextState = {
     data: string;
     location: TextLocation;
@@ -13,9 +18,11 @@ export type TextState = {
 export class TextScanner {
     #state: TextState;
 
+
     constructor(state: TextState) {
         this.#state = state;
     }
+
 
     get data(): string {
         return this.#state.data;
@@ -45,9 +52,11 @@ export class TextScanner {
         return this.#state.location.position === this.#state.data.length;
     }
 
+
     get immutable(): boolean {
         return Object.isSealed(this.#state);
     }
+
 
     mark(): TextScanner {
         if (this.immutable) {
@@ -104,6 +113,7 @@ export class TextScanner {
         return this.#state.marks.at(-1);
     }
 
+
     get markCount(): number {
         return this.#state.marks.length;
     }
@@ -111,11 +121,18 @@ export class TextScanner {
     get markedText(): string {
         const lastMark = this.#lastMark;
 
-        if (!lastMark)
-            return '';
-        else
-            return this.#state.data.slice(lastMark.position, this.position);
+        return this.#state.data.slice(lastMark?.position ?? this.position, this.position);
     }
+
+    get markedElement(): TextElement {
+        const location = this.#lastMark ?? this.location;
+
+        return {
+            location: { ...location },
+            value: this.#state.data.slice(location.position, this.position)
+        };
+    }
+
 
     is(value: string | string[] | Set<string> | RegExp | ((value: string) => boolean)): boolean {
         if (typeof value === 'string')
@@ -132,36 +149,37 @@ export class TextScanner {
     }
 
     get isUpper() {
-        return this.is(/[A-Z]/);
+        return this.current.match(/[A-Z]/) !== null;
     }
 
     get isLower() {
-        return this.is(/[a-z]/);
+        return this.current.match(/[a-z]/) !== null;
     }
 
     get isLetter() {
-        return this.is(/[A-Za-z]/);
+        return this.current.match(/[A-Za-z]/) !== null;
     }
 
     get isDigit() {
-        return this.is(/[0-9]/);
+        return this.current.match(/[0-9]/) !== null;
     }
 
     get isHex() {
-        return this.is(/[A-Fa-f0-9]/);
+        return this.current.match(/[A-Fa-f0-9]/) !== null;
     }
 
     get isLetterOrDigit() {
-        return this.is(/[A-Za-z0-9]/);
+        return this.current.match(/[A-Za-z0-9]/) !== null;
     }
 
     get isWhitespace() {
-        return this.is(/[ \t]/);
+        return this.current.match(/[ \t]/) !== null;
     }
 
     get isLineEnd() {
-        return this.is(/[\r\n]/);
+        return this.current.match(/[\r\n]/) !== null;
     }
+
 
     consume(): TextScanner {
         if (this.isEnd) return this;
@@ -189,9 +207,46 @@ export class TextScanner {
         }
     }
 
-    consumeIf(value: string | string[] | Set<string> | RegExp | ((value: string) => boolean)): TextScanner {
-        return this.is(value) ? this.consume() : this;
+
+    consumeIf(value: boolean | string | string[] | Set<string> | RegExp | ((value: string) => boolean)): TextScanner {
+        if (typeof value !== 'boolean')
+            value = this.is(value);
+
+        return value ? this.consume() : this;
     }
+
+    consumeIfUpper(): TextScanner {
+        return this.isUpper ? this.consume() : this;
+    }
+
+    consumeIfLower(): TextScanner {
+        return this.isLower ? this.consume() : this;
+    }
+
+    consumeIfLetter(): TextScanner {
+        return this.isLetter ? this.consume() : this;
+    }
+
+    consumeIfDigit(): TextScanner {
+        return this.isDigit ? this.consume() : this;
+    }
+
+    consumeIfHex(): TextScanner {
+        return this.isHex ? this.consume() : this;
+    }
+
+    consumeIfLetterOrDigit(): TextScanner {
+        return this.isLetterOrDigit ? this.consume() : this;
+    }
+
+    consumeIfWhitespace(): TextScanner {
+        return this.isWhitespace ? this.consume() : this;
+    }
+
+    consumeIfLineEnd(): TextScanner {
+        return this.isLineEnd ? this.consume() : this;
+    }
+
 
     debug() {
         console.log(this.#state.data, this.#state.location, this.#state.marks);
