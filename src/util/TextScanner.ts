@@ -220,6 +220,15 @@ export class TextScanner {
     }
 
 
+    skip(amount: number = 0): TextScanner {
+        let scanner: TextScanner = this;
+
+        for (let i = 0; i < amount; i++)
+            scanner = scanner.consume();
+
+        return scanner;
+    }
+
     skipWhile(check: boolean | string | string[] | Set<string> | RegExp | ((value: string, scanner: TextScanner) => boolean)): TextScanner {
         let scanner: TextScanner = this;
 
