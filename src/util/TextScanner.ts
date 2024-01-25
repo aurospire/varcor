@@ -14,16 +14,15 @@ export type TextElement = {
     value: string;
     location: TextLocation;
 };
+
 export const TextElement = Object.seal({
     get empty(): TextElement {
         return { value: '', location: TextLocation.empty };
     }
 });
 
-export type TextState = {
-    data: string;
-    location: TextLocation;
-    marks: TextLocation[];
+export type TextState = TextElement & {
+    marks?: TextLocation[];
 };
 
 export type TextScannerActionResult = TextScanner | undefined | void;
@@ -41,7 +40,7 @@ export type TextScannerCheck =
 
 type RealType<T> = T extends void ? undefined : T;
 
-export class TextScanner {
+export class TextScanner implements TextElement {
     #state: TextState;
 
 
@@ -49,9 +48,13 @@ export class TextScanner {
         this.#state = state;
     }
 
+    get isImmutable(): boolean {
+        return Object.isSealed(this.#state);
+    }
 
-    get data(): string {
-        return this.#state.data;
+
+    get value(): string {
+        return this.#state.value;
     }
 
     get location(): TextLocation {
@@ -74,25 +77,53 @@ export class TextScanner {
         return this.peek();
     }
 
+
     peek(offset: number = 0): string {
-        return this.#state.data.charAt(this.#state.location.position) || '\0';
+        return this.#state.value.charAt(this.#state.location.position) || '\0';
     }
 
 
-    get immutable(): boolean {
-        return Object.isSealed(this.#state);
+
+    clone(immutable?: boolean): TextScanner {
+        const state = {
+            value: this.#state.value,
+            location: { ...this.#state.location },
+            marks: this.#state.marks ? this.#state.marks.map(mark => ({ ...mark })) : undefined
+        };
+
+        if (immutable === undefined)
+            immutable = this.isImmutable;
+
+        return new TextScanner(immutable ? Object.seal(state) : state);
     }
 
+    slice(length: number = 0): TextElement {
+        return {
+            value: this.sliceText(length),
+            location: { ...this.location }
+        };
+    }
+
+    extract(length: number = 0): TextElement {
+        return {
+            value: this.sliceText(length),
+            location: TextLocation.empty
+        };
+    }
+
+    sliceText(length: number = 0): string {
+        return this.value.slice(this.position, length);
+    }
 
     mark(): TextScanner {
-        if (this.immutable) {
+        if (this.isImmutable) {
             return new TextScanner(Object.seal({
                 ...this.#state,
-                marks: [...this.#state.marks, this.#state.location]
+                marks: [...(this.#state.marks ?? []), this.#state.location]
             }));
         }
         else {
-            this.#state.marks.push(this.#state.location);
+            (this.#state.marks = this.#state.marks ?? []).push(this.#state.location);
             return this;
         }
     }
@@ -101,16 +132,16 @@ export class TextScanner {
         const lastMark = this.#lastMark;
 
         if (lastMark) {
-            if (this.immutable) {
+            if (this.isImmutable) {
                 return new TextScanner(Object.seal({
                     ...this.#state,
                     location: lastMark,
-                    marks: this.#state.marks.slice(0, -1)
+                    marks: (this.#state.marks ?? []).slice(0, -1)
                 }));
             }
             else {
                 this.#state.location = lastMark;
-                this.#state.marks.pop();
+                (this.#state.marks = this.#state.marks ?? []).pop();
             }
         }
 
@@ -121,14 +152,14 @@ export class TextScanner {
         const lastMark = this.#lastMark;
 
         if (lastMark) {
-            if (this.immutable) {
+            if (this.isImmutable) {
                 return new TextScanner(Object.seal({
                     ...this.#state,
-                    marks: this.#state.marks.slice(0, -1)
+                    marks: (this.#state.marks = this.#state.marks ?? []).slice(0, -1)
                 }));
             }
             else {
-                this.#state.marks.pop();
+                (this.#state.marks = this.#state.marks ?? []).pop();
             }
         }
 
@@ -136,26 +167,26 @@ export class TextScanner {
     }
 
     get #lastMark(): TextLocation | undefined {
-        return this.#state.marks.at(-1);
+        return (this.#state.marks = this.#state.marks ?? []).at(-1);
     }
 
 
     get markCount(): number {
-        return this.#state.marks.length;
+        return (this.#state.marks = this.#state.marks ?? []).length;
     }
 
     get markedText(): string {
         const lastMark = this.#lastMark;
 
-        return this.#state.data.slice(lastMark?.position ?? this.position, this.position);
+        return this.#state.value.slice(lastMark?.position ?? this.position, this.position);
     }
 
-    get markedElement(): TextElement {
+    markedElement(): TextElement {
         const location = this.#lastMark ?? this.location;
 
         return {
-            location: { ...location },
-            value: this.#state.data.slice(location.position, this.position)
+            value: this.#state.value.slice(location.position, this.position),
+            location: { ...location }
         };
     }
 
@@ -212,7 +243,7 @@ export class TextScanner {
     }
 
     get isTextEnd(): boolean {
-        return this.#state.location.position === this.#state.data.length;
+        return this.#state.location.position === this.#state.value.length;
     }
 
 
@@ -233,7 +264,7 @@ export class TextScanner {
             column: newLine ? 0 : this.column + 1
         };
 
-        if (this.immutable) {
+        if (this.isImmutable) {
             return new TextScanner(Object.seal({ ...this.#state, location: newLocation }));
         }
         else {
@@ -280,7 +311,7 @@ export class TextScanner {
         return scanner;
     }
 
-    consumeToEnd(): TextScanner {
+    consumeToTextEnd(): TextScanner {
         let scanner: TextScanner = this;
 
         while (!scanner.isTextEnd)
@@ -289,23 +320,24 @@ export class TextScanner {
         return scanner;
     }
 
-    consumeToLineEnd(skipLineEnd: boolean = false): TextScanner {
+    consumeToLineEnd(): TextScanner {
         let scanner: TextScanner = this;
 
         while (!scanner.isEnding)
             scanner = scanner.consume();
 
-        return skipLineEnd ? scanner.consumeLineEnd() : scanner;
+        return scanner;
     }
 
-    consumeLineEnd(partial: boolean = false): TextScanner {
+    consumeLineEnding(): TextScanner {
         const current = this.peek(0);
 
-        const next = this.peek(1);
-
-        return this.isNewLine
-            ? this.consume().consumeIf(!partial && current === '\r' && next === '\n')
-            : this;
+        if (current === '\n')
+            return this.consume();
+        else if (current === '\r')
+            return this.consume().consumeIf('\n');
+        else
+            return this;
     }
 
 
@@ -317,6 +349,7 @@ export class TextScanner {
         return this.is(check) ? action(this) || this : this;
     }
 
+
     if<T extends TextScannerActionResult, F extends TextScannerActionResult>(
         check: TextScannerCheck,
         action: TextScannerAction<T>,
@@ -325,16 +358,22 @@ export class TextScanner {
         return (this.is(check) ? action(this) : otherwise(this)) as RealType<T | F>;
     }
 
+
     debug() {
-        console.log(this.#state.data, this.#state.location, this.#state.marks);
+        console.log(this.#state);
     }
 
-    static from(data: string, immutable: boolean = false) {
-        const state = {
-            data,
-            location: { position: 0, line: 0, column: 0 },
-            marks: []
-        };
+    static from(value: string | TextElement, immutable: boolean = false) {
+        const state: TextElement = typeof value === 'string'
+            ? {
+                value,
+                location: TextLocation.empty
+            }
+            : {
+                value: value.value,
+                location: { ...value.location }
+            }
+            ;
 
         return new TextScanner(immutable ? Object.seal(state) : state);
     }

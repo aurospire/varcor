@@ -11,8 +11,6 @@ export type EnvState = {
     issues: EnvIssue[];
 };
 
-
-
 export const parseEnv = (from: string, env: Record<string, string>): EnvState => {
     const state: EnvState = {
         text: TextScanner.from(from),
@@ -20,7 +18,7 @@ export const parseEnv = (from: string, env: Record<string, string>): EnvState =>
         issues: []
     };
 
-    const { text } = state;
+    const { text, issues } = state;
 
     while (true) {
         text.consumeWhitespace();
@@ -30,37 +28,25 @@ export const parseEnv = (from: string, env: Record<string, string>): EnvState =>
         else if (text.is(/[A-Za-z_]/))
             parseVariable(state);
         else if (text.isNewLine)
-            text.consumeLineEnd();
+            text.consumeLineEnding();
         else if (text.isTextEnd)
             break;
         else {
-            captureIssue('Invalid Text', state, true, true);
+            issues.push({ issue: 'Invalid Text', element: text.slice(1) });
+            text.consumeToTextEnd().consumeLineEnding();
         }
     }
 
     return state;
 };
 
-const captureIssue = (issue: string, state: EnvState, mark: boolean, skip: boolean | number, after: 'rollback' | 'commit' = 'commit') => {
-    const { text, issues } = state;
-    if (mark) text.mark();
-    if (skip === true) text.consumeToLineEnd(false);
-    else if (typeof skip === 'number') text.skip(skip);
-    const element = text.markedElement;
-    console.log('ISSUE', element);
-    if (skip) text.consumeLineEnd();
-    if (after === 'commit') text.commit(); else text.rollback;
-    issues.push({ issue: 'Invalid Text', element });
-};
-
 const parseComment = (state: EnvState) => {
     const { text } = state;
-    text.mark();
-    text.consume();
-    text.consumeToLineEnd(true);
-    const element = text.markedElement;
-    console.log('COMMENT', element);
-    text.commit();
+
+    text.mark()
+        .consumeToLineEnd()
+        .do(s => console.log('COMMENT', text.markedElement()))
+        .commit();
 };
 
 const parseVariable = (state: EnvState) => {
@@ -70,7 +56,7 @@ const parseVariable = (state: EnvState) => {
         .mark()
         .consume()
         .consumeWhile(/[A-Za-z0-9_]/)
-        .do(s => { identifier = s.markedElement; })
+        .do(s => { identifier = s.markedElement() })
         .commit();
 
     console.log('IDENTIFIER', identifier);
@@ -85,9 +71,9 @@ const parseVariable = (state: EnvState) => {
 
     text.consumeWhitespace();
 
-    if (text.is('\'')) {
-        let value = TextElement.empty;
 
+    let value = TextElement.empty;
+    if (text.is('\'')) {
         text
             .consume()
             .mark()
@@ -97,22 +83,35 @@ const parseVariable = (state: EnvState) => {
             value = text.markedElement;
             text.consume();
             text.commit();
+        }
+        else {
+            captureIssue('Missing end quote', state, false, false, 'commit');
+            text.commit();
+        }
+
+        console.log('SINGLE QUOTE VALUE', value);
+    }
+    else if (text.is('"')) {
+        if (text.is('\\')) {
+
+        }
+        else if (text.is('$')) {
+
+        }
+        else if (text.is('"')) {
+            value = text.markedElement;
+            text.consume();
+            text.commit();
 
             text.consumeWhitespace();
 
             if (!text.isEnding)
                 captureIssue('Missing end quote', state, true, true, 'commit');
         }
-        else {
-            text.consume();
-            captureIssue('Missing end quote', state, false, false, 'commit');
-            text.commit();
-        }
-
-        console.log('VALUE', value);
-    }
-    else if (text.is('"')) {
-
     }
 
+    text.consumeWhitespace();
+
+    if (!text.isEnding)
+        captureIssue('Missing end quote', state, true, true, 'commit');
 };
