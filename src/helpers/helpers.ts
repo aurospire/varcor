@@ -9,8 +9,8 @@ import { ZodType, ZodTypeDef } from 'zod';
 import { DateTime } from 'luxon';
 import { DateObject, DateType, Result } from '@/util';
 import { Settings, SettingsValues } from '@/settings/Settings';
-import { VariableObject } from '..';
 import { DataObjectBuilder } from '@/data';
+import { VariableObject } from '@/variables';
 
 
 

@@ -4,10 +4,21 @@ export type TextLocation = {
     column: number;
 };
 
+export const TextLocation = Object.seal({
+    get empty(): TextLocation {
+        return { position: 0, line: 0, column: 0 };
+    }
+});
+
 export type TextElement = {
     value: string;
     location: TextLocation;
 };
+export const TextElement = Object.seal({
+    get empty(): TextElement {
+        return { value: '', location: TextLocation.empty };
+    }
+});
 
 export type TextState = {
     data: string;
@@ -49,11 +60,7 @@ export class TextScanner {
     }
 
     peek(offset: number = 0): string {
-        return this.#state.data.charAt(this.#state.location.position);
-    }
-
-    get isTextEnd(): boolean {
-        return this.#state.location.position === this.#state.data.length;
+        return this.#state.data.charAt(this.#state.location.position) || '\0';
     }
 
 
@@ -61,6 +68,9 @@ export class TextScanner {
         return Object.isSealed(this.#state);
     }
 
+    do(action: (scanner: TextScanner) => TextScanner | undefined | void): TextScanner {
+        return action(this) || this;
+    }
 
     mark(): TextScanner {
         if (this.immutable) {
@@ -181,8 +191,16 @@ export class TextScanner {
         return this.current.match(/[ \t]/) !== null;
     }
 
-    get isLineEnd() {
+    get isNewLine() {
         return this.current.match(/[\r\n]/) !== null;
+    }
+
+    get isEnding() {
+        return this.current.match(/[\r\n\0]/) !== null;
+    }
+
+    get isTextEnd(): boolean {
+        return this.#state.location.position === this.#state.data.length;
     }
 
 
@@ -229,7 +247,7 @@ export class TextScanner {
         return scanner;
     }
 
-    skipWhile(check: boolean | string | string[] | Set<string> | RegExp | ((value: string, scanner: TextScanner) => boolean)): TextScanner {
+    consumeWhile(check: boolean | string | string[] | Set<string> | RegExp | ((value: string, scanner: TextScanner) => boolean)): TextScanner {
         let scanner: TextScanner = this;
 
         while (scanner.is(check))
@@ -238,7 +256,7 @@ export class TextScanner {
         return scanner;
     }
 
-    skipWhitespace(includeLineEnd: boolean = false): TextScanner {
+    cosumeWhitespace(includeLineEnd: boolean = false): TextScanner {
         const regex = includeLineEnd ? /[ \t\r\n]/ : /[ \t]/;
 
         let scanner: TextScanner = this;
@@ -249,22 +267,31 @@ export class TextScanner {
         return scanner;
     }
 
-    skipToLineEnd(): TextScanner {
+    consumeToEnd(): TextScanner {
         let scanner: TextScanner = this;
 
-        while (!scanner.current.match(/[\r\n]/))
+        while (!scanner.isTextEnd)
             scanner = scanner.consume();
 
         return scanner;
     }
 
-    skipLineEnd(complete: boolean = true): TextScanner {
+    consumeToLineEnd(skipLineEnd: boolean = false): TextScanner {
+        let scanner: TextScanner = this;
+
+        while (!scanner.isEnding)
+            scanner = scanner.consume();
+
+        return skipLineEnd ? scanner.consumeLineEnd() : scanner;
+    }
+
+    consumeLineEnd(partial: boolean = false): TextScanner {
         const current = this.peek(0);
 
         const next = this.peek(1);
 
-        return this.isLineEnd
-            ? this.consume().consumeIf(complete && current === '\r' && next === '\n')
+        return this.isNewLine
+            ? this.consume().consumeIf(!partial && current === '\r' && next === '\n')
             : this;
     }
 
