@@ -26,6 +26,21 @@ export type TextState = {
     marks: TextLocation[];
 };
 
+export type TextScannerActionResult = TextScanner | undefined | void;
+
+export type TextScannerAction<R extends TextScannerActionResult = TextScannerActionResult> = (scanner: TextScanner) => R;
+
+export type TextScannerCheck =
+    | boolean
+    | string
+    | RegExp
+    | string[]
+    | Set<string>
+    | ((value: string, scanner: TextScanner) => boolean);
+
+
+type RealType<T> = T extends void ? undefined : T;
+
 export class TextScanner {
     #state: TextState;
 
@@ -68,9 +83,6 @@ export class TextScanner {
         return Object.isSealed(this.#state);
     }
 
-    do(action: (scanner: TextScanner) => TextScanner | undefined | void): TextScanner {
-        return action(this) || this;
-    }
 
     mark(): TextScanner {
         if (this.immutable) {
@@ -148,7 +160,7 @@ export class TextScanner {
     }
 
 
-    is(check: boolean | string | string[] | Set<string> | RegExp | ((value: string, scanner: TextScanner) => boolean)): boolean {
+    is(check: TextScannerCheck): boolean {
         if (typeof check === 'boolean')
             return check;
         else if (typeof check === 'string')
@@ -230,33 +242,34 @@ export class TextScanner {
         }
     }
 
-    consumeIf(check: boolean | string | string[] | Set<string> | RegExp | ((value: string, scanner: TextScanner) => boolean)): TextScanner {
+    consumeIf(check: TextScannerCheck): TextScanner {
         if (typeof check !== 'boolean')
             check = this.is(check);
 
         return check ? this.consume() : this;
     }
 
-
     skip(amount: number = 0): TextScanner {
         let scanner: TextScanner = this;
 
-        for (let i = 0; i < amount; i++)
+        for (let i = 0; i < amount; i++) {
+            if (scanner.isTextEnd) break;
             scanner = scanner.consume();
+        }
 
         return scanner;
     }
 
-    consumeWhile(check: boolean | string | string[] | Set<string> | RegExp | ((value: string, scanner: TextScanner) => boolean)): TextScanner {
+    consumeWhile(check: TextScannerCheck): TextScanner {
         let scanner: TextScanner = this;
 
-        while (scanner.is(check))
+        while (!scanner.isTextEnd && scanner.is(check))
             scanner = scanner.consume();
 
         return scanner;
     }
 
-    cosumeWhitespace(includeLineEnd: boolean = false): TextScanner {
+    consumeWhitespace(includeLineEnd: boolean = false): TextScanner {
         const regex = includeLineEnd ? /[ \t\r\n]/ : /[ \t]/;
 
         let scanner: TextScanner = this;
@@ -295,6 +308,22 @@ export class TextScanner {
             : this;
     }
 
+
+    do(action: TextScannerAction): TextScanner {
+        return action(this) || this;
+    }
+
+    doIf(check: TextScannerCheck, action: TextScannerAction): TextScanner {
+        return this.is(check) ? action(this) || this : this;
+    }
+
+    if<T extends TextScannerActionResult, F extends TextScannerActionResult>(
+        check: TextScannerCheck,
+        action: TextScannerAction<T>,
+        otherwise: TextScannerAction<F>
+    ): RealType<T | F> {
+        return (this.is(check) ? action(this) : otherwise(this)) as RealType<T | F>;
+    }
 
     debug() {
         console.log(this.#state.data, this.#state.location, this.#state.marks);

@@ -2,7 +2,7 @@ import { parseEnv } from "./env";
 
 parseEnv(`
 #This should error
-asfasf
+asfasf = 'hello
 ` ,{})
 
 console.log('DONE')
