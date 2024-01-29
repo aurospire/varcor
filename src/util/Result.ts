@@ -1,10 +1,10 @@
 export type ResultSuccess<T> = { success: true; value: T; };
 
-export type ResultFailure = { success: false; issues: string[]; };
+export type ResultFailure<F> = { success: false; error: F; };
 
-export type Result<T> = ResultSuccess<T> | ResultFailure;
+export type Result<T, F> = ResultSuccess<T> | ResultFailure<F>;
 
 export const Result = Object.seal({
     success: <T>(value: T): ResultSuccess<T> => ({ success: true, value }),
-    failure: (issues: string | string[]): ResultFailure => ({ success: false, issues: Array.isArray(issues) ? issues : [issues] })
+    failure: <F>(error: F): ResultFailure<F> => ({ success: false, error })
 });

@@ -1,7 +1,7 @@
 import { inspect } from "util";
 import { Result } from "@/util";
 
-export type Transformer<I, O> = (value: I) => Result<O>;
+export type Transformer<I, O> = (value: I) => Result<O, string[]>;
 
 export class Variable<T = never> {
     #optional: boolean;
@@ -12,16 +12,16 @@ export class Variable<T = never> {
         this.#default = from instanceof Variable ? from.#default : (from?.default ?? undefined);
     }
 
-    parse(value?: string | undefined): Result<T> {
+    parse(value?: string | undefined): Result<T, string[]> {
         if (value !== undefined)
             return this.__parse(value);
         else {
             if (this.#optional)
-                return Result.success(undefined) as Result<T>;
+                return Result.success(undefined) as Result<T, string[]>;
             else if (this.#default !== undefined)
-                return Result.success(this.#default) as Result<T>;
+                return Result.success(this.#default) as Result<T, string[]>;
             else
-                return Result.failure('is required');
+                return Result.failure(['is required']);
         }
     }
 
@@ -38,8 +38,8 @@ export class Variable<T = never> {
     }
 
 
-    protected __parse(value: string): Result<T> {
-        return Result.failure('must never exist');
+    protected __parse(value: string): Result<T, string[]> {
+        return Result.failure(['must never exist']);
     }
 
     protected __clone(): Variable<T> {
@@ -109,7 +109,7 @@ class AggregateVariable<T> extends Variable<T> {
         return new AggregateVariable<T>(this);
     }
 
-    protected __parse(value: string): Result<T> {
+    protected __parse(value: string): Result<T, string[]> {
         const issues: string[] = [];
 
         for (const variable of this.#variables) {
@@ -117,7 +117,7 @@ class AggregateVariable<T> extends Variable<T> {
             if (result.success)
                 return result;
             else
-                issues.push(...result.issues);
+                issues.push(...result.error);
         }
 
         return Result.failure(issues);
@@ -144,7 +144,7 @@ class TransformedVariable<T> extends Variable<T> {
         return `{${this.#data.from.type}->${this.#data.type ?? '?'}}`;
     }
 
-    override parse(value?: string | undefined): Result<T> {
+    override parse(value?: string | undefined): Result<T, string[]> {
         if (value === undefined && (this.isOptional || this.default !== undefined)) {
             return super.parse(value);
         }

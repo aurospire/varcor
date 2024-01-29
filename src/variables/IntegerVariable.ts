@@ -28,7 +28,7 @@ export class IntegerVariable extends Variable<number> {
         return newVar;
     }
 
-    protected override  __parse(value: string): Result<number> {
+    protected override  __parse(value: string): Result<number, string[]> {
         const min = this.#min || -Infinity;
         const max = this.#max || Infinity;
 
@@ -44,14 +44,14 @@ export class IntegerVariable extends Variable<number> {
         const result = value.match(/^(?:([0-9]+)|(?:0b([01]+))|(?:0x([0-9A-F]+)))$/i);
 
         if (!result)
-            return Result.failure('must be an integer');
+            return Result.failure(['must be an integer']);
         else {
             const integer = Number.parseInt(result[1] ?? result[2] ?? result[3], result[1] ? 10 : result[2] ? 2 : 16);
 
             if (integer >= min && integer <= max)
                 return Result.success(integer);
             else
-                return Result.failure(error);
+                return Result.failure([error]);
         }
 
     }

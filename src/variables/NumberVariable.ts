@@ -28,7 +28,7 @@ export class NumberVariable extends Variable<number> {
         return newVar;
     }
 
-    protected override  __parse(value: string): Result<number> {
+    protected override  __parse(value: string): Result<number, string[]> {
         const min = this.#min ?? -Infinity;
         const max = this.#max ?? Infinity;
 
@@ -44,11 +44,11 @@ export class NumberVariable extends Variable<number> {
         const result = Number.parseFloat(value);
 
         if (Number.isNaN(result))
-            return Result.failure('must be a number');
+            return Result.failure(['must be a number']);
         else if (result >= min && result <= max)
             return Result.success(result);
         else
-            return Result.failure(error);
+            return Result.failure([error]);
     }
 
     protected override  __clone(): NumberVariable {

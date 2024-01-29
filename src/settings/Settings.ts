@@ -4,7 +4,7 @@ import { SettingsError, SettingsIssues } from "./SettingsError";
 import { DataObjectBuilder, DataObject } from "@/data";
 
 export type SettingsResults<T extends VariableObject> = {
-    [K in keyof T]: T[K] extends Variable<infer U> ? Result<U> : never;
+    [K in keyof T]: T[K] extends Variable<infer U> ? Result<U, string[]> : never;
 };
 
 export type SettingsValues<T extends VariableObject> = {

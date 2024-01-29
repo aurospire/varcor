@@ -1,7 +1,7 @@
 import { Result } from "@/util";
 import { Variable } from "./Variable";
 
-export type StringValidator = (value: string) => Result<string>;
+export type StringValidator = (value: string) => Result<string, string[]>;
 
 const validateRegex = (value: string, regex: RegExp) => {
     const result = value.match(regex);
@@ -31,7 +31,7 @@ export class StringVariable extends Variable<string> {
         return newVar;
     }
 
-    protected override  __parse(value: string): Result<string> {
+    protected override  __parse(value: string): Result<string, string[]> {
         if (this.#validators.length) {
             const issues: string[] = [];
 
@@ -41,7 +41,7 @@ export class StringVariable extends Variable<string> {
                 if (result.success)
                     return result;
                 else
-                    issues.push(...result.issues);
+                    issues.push(...result.error);
             }
 
             return Result.failure(issues);

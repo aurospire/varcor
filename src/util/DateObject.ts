@@ -111,7 +111,7 @@ const validateItem = (issues: string[], name: string, value: number | string | u
     return value || defaultTo;
 };
 
-const validateRawObject = (value: DateObjectRaw): Result<DateObject> => {
+const validateRawObject = (value: DateObjectRaw): Result<DateObject, string[]> => {
     const issues: string[] = [];
 
     const year = validateItem(issues, 'year', value.year, defaults.year, 0);

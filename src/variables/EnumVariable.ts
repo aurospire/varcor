@@ -34,7 +34,7 @@ export class EnumVariable<T extends string | never = never> extends Variable<T> 
         return newVar;
     }
 
-    protected override  __parse(value: string): Result<T> {
+    protected override  __parse(value: string): Result<T, string[]> {
         let index: number;
 
         if (this.#insensitive)
@@ -45,7 +45,7 @@ export class EnumVariable<T extends string | never = never> extends Variable<T> 
         if (index !== -1)
             return Result.success(this.#items[index] as T);
         else
-            return Result.failure(this.#items.length === 0 ? `must never exist` : `must be of ${this.type}`);
+            return Result.failure([this.#items.length === 0 ? `must never exist` : `must be of ${this.type}`]);
     }
 
     protected override  __clone(): EnumVariable<T> {

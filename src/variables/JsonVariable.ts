@@ -1,7 +1,7 @@
 import { Result } from "@/util";
 import { Variable } from "./Variable";
 
-export type JsonValidator<T> = (data: any) => Result<T>;
+export type JsonValidator<T> = (data: any) => Result<T, string[]>;
 
 export class JsonVariable<T = any> extends Variable<T> {
 
@@ -21,7 +21,7 @@ export class JsonVariable<T = any> extends Variable<T> {
         return newVar;
     }
 
-    protected override  __parse(value: string): Result<T> {
+    protected override  __parse(value: string): Result<T, string[]> {
         try {
             const data = JSON.parse(value);
 
