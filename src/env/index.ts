@@ -36,7 +36,7 @@ export const parseEnv = (data: string): Result<Record<string, string>, EnvIssue[
             let result = '';
 
             while (value) {
-                const { contentS, contentD, contentU, rest } = line.match(varRegex)?.groups ?? {};
+                const { contentS, contentD, contentU, rest } = value.match(valueRegex)?.groups ?? {};
 
                 const piece = contentS ?? contentD ?? contentU;
 
