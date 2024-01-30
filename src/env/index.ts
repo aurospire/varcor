@@ -1,27 +1,4 @@
-import { Result, TextScanner } from "@/util";
-
-/*
-    rule Env = Line* EOT;
-
-    rule Line = Variable (';' Varible')? (EOL | EOT);
-
-    rule Variable = 'export'? Identifier '=' Value ';';
-
-    
-    rule Whitespace = [ \t];
-
-    rule Comment = '#' (unless EOL .)*;
-    
-    rule EOT = '\0';
-
-    rule EOL = [\r\n];
-
-    rule Identifier = [A-Za-z_][A-Za-z0-9_]*;
-
-    rule Value = MultilineQuoted | Quoted | Unquoted;
-
-    rule MultilineQuoted = /'''/ EOL (unless /'''/ .)+ /'''/
-*/
+import { Result } from "@/util";
 
 export type EnvIssue = {
     line: number;
@@ -30,63 +7,55 @@ export type EnvIssue = {
     message: string,
 };
 
-type EnvParserState = {
-    text: TextScanner,
-    result: Record<string, string>;
-    errors: EnvIssue[],
-};
+const ignoreableRegex = /^\s*(?:#.*)?$/;
+
+const singleQuoted = `(?:'(?<contentS>[^']*)')`;
+const doubleQuoted = `(?:"(?<contentD>(?:[^"$]|\\$\\$)*)")`;
+const unquoted = `(?:(?<contentU>[^'"\\s;]*))`;
+
+const valueRegex = `^(${singleQuoted}|${doubleQuoted}|${unquoted})(?<rest>.*)$`;
+
+const varRegex = new RegExp(`^\\s*((?:export)\\s+)?(?<key>[A-Za-z_][A-Za-z0-9_]*)=(?<value>(?:${singleQuoted}|${doubleQuoted}|${unquoted})*)\\s*;?\\s*(?:#.*)?$`);
 
 export const parseEnv = (data: string): Result<Record<string, string>, EnvIssue[]> => {
-    const text = TextScanner.from(data);
+    const lines = data.split(/(?:\r\n?)|\n/g);
 
-    const state = {
-        text,
-        result: {},
-        errors: []
-    };
+    const issues: EnvIssue[] = [];
 
-    while (!text.isTextEnd) {
-        parseLine(state);
-    }
+    const vars: Record<string, string> = {};
 
-    return (state.errors.length) ? Result.failure(state.errors) : Result.success(state.result);
-};
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
 
-// rule Line = Ignorable? (Variable Whitespace? ';' Ignorable?)* (EOL | EOT);
-const parseLine = (state: EnvParserState) => {
-    const { text } = state;
+        if (line.match(ignoreableRegex))
+            continue;
 
-    parseIgnorable(state);
+        let { key, value } = line.match(varRegex)?.groups ?? {};
 
-    while (true) {
-        if (!parseVariable(state))
-            break;
+        if (key) {
+            let result = '';
 
-        text.consumeWhitespace();
+            while (value) {
+                const { contentS, contentD, contentU, rest } = line.match(varRegex)?.groups ?? {};
 
-        if (text.is(';'))
-            text.consume();
-        else
-            state.errors.push({
-                line: text.line,
-                column: text.column,
-                value: text.value,
-                message: 'Missing Semicolon'
+                const piece = contentS ?? contentD ?? contentU;
+
+                result += piece;
+
+                value = rest;
+            }
+
+            vars[key] = result;
+        }
+        else {
+            issues.push({
+                line: i,
+                column: 0,
+                value: line,
+                message: 'Invalid Line'
             });
+        }
     }
-};
 
-const parseIgnorable = (state: EnvParserState) => {
-    const { text } = state;
-
-    text.consumeWhitespace();
-
-    if (text.is('#'))
-        text.consumeToLineEnd();
-
-    text.consumeWhitespace();
-};
-
-const parseVariable = (state: EnvParserState): boolean => {
-
+    return issues.length ? Result.failure(issues) : Result.success(vars);
 };
