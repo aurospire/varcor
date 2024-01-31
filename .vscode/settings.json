@@ -15,6 +15,6 @@
         "**/jest.config.ts": true,
         "**/package-lock.json": true,
         "**/.gitignore": true,
-        "**/.npmrc": true,
+        "**/.npmrc": true
     }
 }
