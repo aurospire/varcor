@@ -1,3 +1,5 @@
+import nodefs from 'fs';
+import { parseEnv } from "@/env";
 import { DataObject } from "./DataObject";
 
 export class DataObjectBuilder {
@@ -26,8 +28,46 @@ export class DataObjectBuilder {
         return this.addDataObject(data);
     }
 
-    addJson(json: string): DataObjectBuilder {
+    addEnvFormat(env: string): DataObjectBuilder {
+        const result = parseEnv(env);
+
+        if (result.success)
+            return this.addObject(result.value);
+        else
+            throw new Error(JSON.stringify(result.error));
+    }
+
+    addJsonFormat(json: string): DataObjectBuilder {
         return this.addObject(JSON.parse(json));
+    }
+
+    addEnvFile(path: string, mustExist: boolean = true, condition: boolean = true): DataObjectBuilder {
+        if (condition) {
+            if (nodefs.existsSync(path)) {
+                const data = nodefs.readFileSync(path).toString();
+
+                return this.addEnvFormat(data);
+            }
+            else if (mustExist) {
+                throw new Error(`Missing File ${path}`);
+            }
+        }
+
+        return this;
+    }
+
+    addJsonFile(path: string, mustExist: boolean = true, condition: boolean = true): DataObjectBuilder {
+        if (condition) {
+            if (nodefs.existsSync(path)) {
+                const data = nodefs.readFileSync(path).toString();
+
+                return this.addJsonFormat(data);
+            }
+            else if (mustExist) {
+                throw new Error(`Missing File ${path}`);
+            }
+        }
+        return this;
     }
 
     toDataObject(): DataObject {

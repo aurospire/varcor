@@ -57,7 +57,7 @@ const data = Object.seal({
     env: () => new DataObjectBuilder().addEnv(),
     obj: (data: Record<string, any>) => new DataObjectBuilder().addObject(data),
     strings: (data: Record<string, any>) => new DataObjectBuilder().addObject(data),
-    json: (data: string) => new DataObjectBuilder().addJson(data)
+    json: (data: string) => new DataObjectBuilder().addJsonFormat(data)
 });
 
 const vars = Object.seal({
