@@ -1,3 +1,6 @@
+import { DateTime } from 'luxon';
+import { ZodType, ZodTypeDef } from 'zod';
+
 import { IntegerVariable } from '@/variables/IntegerVariable';
 import { EnumVariable } from '@/variables/EnumVariable';
 import { NumberVariable } from '@/variables/NumberVariable';
@@ -5,8 +8,6 @@ import { StringVariable } from '@/variables/StringVariable';
 import { BooleanVariable } from '@/variables/BooleanVariable';
 import { DateObjectVariable } from '@/variables/DateObjectVariable';
 import { JsonValidator, JsonVariable } from '@/variables/JsonVariable';
-import { ZodType, ZodTypeDef } from 'zod';
-import { DateTime } from 'luxon';
 import { DateObject, DateType, Result } from '@/util';
 import { Settings, SettingsValues } from '@/settings/Settings';
 import { DataObjectBuilder } from '@/data';
