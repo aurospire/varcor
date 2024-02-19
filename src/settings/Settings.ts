@@ -1,4 +1,4 @@
-import { Result } from "@/util";
+import { Result, ResultFailure } from "@/util";
 import { DataObjectBuilder, DataObject } from "@/data";
 import { Variable, VariableObject } from "@/variables";
 import { SettingsError, SettingsIssues } from "./SettingsError";
@@ -53,7 +53,7 @@ export class Settings<V extends VariableObject> {
     filterIssues(results: SettingsResults<V>): SettingsIssues[] {
         return Object
             .entries(results)
-            .filter(([key, result]) => !result.success)
-            .map(([key, result]) => ({ key, issues: result.errors }));
+            .filter(([key, result]: [string, Result<V, string[]>]) => !result.success)
+            .map(([key, result]: [string, ResultFailure<string[]>]) => ({ key, issues: result.error }));
     }
 }
