@@ -1,17 +1,10 @@
 import { DateTime } from 'luxon';
 import { ZodType, ZodTypeDef } from 'zod';
 
-import { IntegerVariable } from '@/variables/IntegerVariable';
-import { EnumVariable } from '@/variables/EnumVariable';
-import { NumberVariable } from '@/variables/NumberVariable';
-import { StringVariable } from '@/variables/StringVariable';
-import { BooleanVariable } from '@/variables/BooleanVariable';
-import { DateObjectVariable } from '@/variables/DateObjectVariable';
-import { JsonValidator, JsonVariable } from '@/variables/JsonVariable';
 import { DateObject, DateType, Result } from '@/util';
 import { Settings, SettingsValues } from '@/settings/Settings';
 import { DataObjectBuilder } from '@/data';
-import { Variable, VariableObject } from '@/variables';
+import { BooleanVariable, DateObjectVariable, EnumVariable, IntegerVariable, JsonValidator, JsonVariable, NumberVariable, StringVariable, Variable, VariableObject } from '@/variables';
 
 const numberVar = () => new NumberVariable();
 
