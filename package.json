@@ -18,6 +18,10 @@
     "config": {
         "watch": "./src;package*.json"
     },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aurospire/varcor"
+    },
     "scripts": {
         "start": "node ./dist/index.js",
         "watch": "webpack --watch -c config/webpack/webpack.config.ts",
