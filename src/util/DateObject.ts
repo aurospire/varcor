@@ -1,22 +1,36 @@
 import { Result } from "./Result";
 
-/* DateType */
+/**
+ * Represents the different types of date formats.
+ */
 export type DateType = 'date' | 'time' | 'datetime' | 'timeTz' | 'datetimeTz';
 
+/** Regular expressions for different date formats */
+
+/** Regular expression for a timezone */
 export const timezone = '(?:(?<tzutc>Z)|(?:(?<tzhour>[+-]\\d{2}):(?<tzminute>\\d{2})))';
 
+/** Regular expression for time */
 export const time = '(?:(?<hour>\\d{2})\:(?<minute>\\d{2})(?:\:(?<second>\\d{2})(?:\.(?<ms>\\d{3}))?)?)';
 
+/** Regular expression for date */
 export const date = '(?:(?<year>\\d{4})(?:-(?<month>\\d{2})(?:-(?<day>\\d{2}))?)?)';
 
+/** Regular expression for datetime */
 export const datetime = `^${date}(?:[T ]${time})?$`;
 
+/** Regular expression for time with timezone */
 export const timeTz = `${time}${timezone}`;
 
+/** Regular expression for datetime with timezone */
 export const datetimeTz = `${date}(?:[T ]${timeTz}?)?`;
+
 
 const makeRegex = (value: string): RegExp => new RegExp(`^${value}$`, 'i');
 
+/**
+ * Regular expressions for date and time formats.
+ */
 const regex = Object.seal({
     raw: Object.seal({
         date: date,
@@ -30,6 +44,11 @@ const regex = Object.seal({
     timeTz: makeRegex(timeTz),
     datetime: makeRegex(datetime),
     datetimeTz: makeRegex(datetimeTz),
+    /**
+     * Resolves a given date format into a regular expression.
+     * @param from The date format or regular expression.
+     * @returns A regular expression for the specified format.
+     */
     resolve: (from?: DateType | RegExp): RegExp => {
         if (from instanceof RegExp)
             return from;
@@ -45,14 +64,11 @@ const regex = Object.seal({
     }
 } as const);
 
-
 const leapYear = (year: number): number => ((year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0)) ? 1 : 0;
 
-//                    J   F   M   A   M   J   J   A   S   O   N   D
 const regularDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-
 
 const monthMap: Record<string, number> = Object.fromEntries(monthNames.flatMap((value, index) => {
     return [[value, index + 1], [value.substring(0, 3), index + 1]];
@@ -60,9 +76,14 @@ const monthMap: Record<string, number> = Object.fromEntries(monthNames.flatMap((
 
 const monthDays = (year: number, month: number) => (regularDays[month - 1] ?? 30) + leapYear(year);
 
-
+/**
+ * Represents the different types of timezones.
+ */
 export type TimeZone = { type: 'local'; } | { type: 'utc'; } | { type: 'offset', hour: number; minute: number; };
 
+/**
+ * Represents a date object with various components.
+ */
 export type DateObject = {
     year: number;
     month: number;
@@ -74,6 +95,9 @@ export type DateObject = {
     tz: TimeZone;
 };
 
+/**
+ * Represents a raw date object with optional components.
+ */
 export type DateObjectRaw = {
     year?: number | string;
     month?: number | string;
@@ -87,6 +111,7 @@ export type DateObjectRaw = {
     tzminute?: number | string;
 };
 
+/** Default values for date components */
 const defaults = {
     year: 2000,
     month: 1,
@@ -95,9 +120,19 @@ const defaults = {
     minute: 0,
     second: 0,
     ms: 0,
-    tz: Object.seal({ type: 'local'})
-} as const satisfies DateObject;
+    tz: Object.seal({ type: 'local'}) satisfies TimeZone
+} as const;
 
+/**
+ * Validates an individual date component and assigns a default value if necessary.
+ * @param issues The array to store validation issues.
+ * @param name The name of the date component.
+ * @param value The value of the date component.
+ * @param defaultTo The default value for the date component.
+ * @param min The minimum allowed value for the date component.
+ * @param max The maximum allowed value for the date component.
+ * @returns The validated and defaulted value of the date component.
+ */
 const validateItem = (issues: string[], name: string, value: number | string | undefined, defaultTo: number, min: number, max?: number): number => {
     if (typeof value === 'string')
         value = Number.parseInt(value);
@@ -222,10 +257,41 @@ const parseDateObject = (value: string, format: RegExp | DateType = 'datetimeTz'
     return Result.failure(`Does not match format ${format}`);
 };
 
+/**
+ * Utility functions for working with DateObjects.
+ */
 export const DateObject = Object.seal({
+    /**
+     * Validates a raw date object and returns a Result object containing either the validated DateObject or validation issues.
+     * @param value The raw date object to validate.
+     * @returns A Result object containing the validated DateObject or validation issues.
+     */
     from: validateRawObject,
+
+    /**
+     * Converts a DateObject to a DateObject of a specific type.
+     * @param value The input DateObject.
+     * @param type The type of date to convert to.
+     * @returns The converted DateObject.
+     */
     to: toDateType,
+
+    /**
+     * Converts a DateObject to an ISO string representation.
+     * @param value The input DateObject.
+     * @param full If true, includes time components in the ISO string.
+     * @returns The ISO string representation of the DateObject.
+     */
     toISO: toIsoString,
+
+    /** Regular expressions for date and time formats */
     regex: regex,
+
+    /**
+     * Parses a string into a DateObject based on a specified format.
+     * @param value The input string to parse.
+     * @param format The format of the input string.
+     * @returns A Result object containing either the parsed DateObject or an error message.
+     */
     parse: parseDateObject
 });
