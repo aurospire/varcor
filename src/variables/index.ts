@@ -5,5 +5,6 @@ export * from './EnumVariable';
 export * from './IntegerVariable';
 export * from './NumberVariable';
 export * from './StringVariable';
+export * from './JsonVariable';
 
 export * from './VariableObject';

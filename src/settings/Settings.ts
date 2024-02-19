@@ -1,7 +1,7 @@
-import { Result } from "../util";
-import { Variable, VariableObject } from "../variables";
-import { SettingsError, SettingsIssues } from "./SettingsError";
+import { Result } from "@/util";
 import { DataObjectBuilder, DataObject } from "@/data";
+import { Variable, VariableObject } from "@/variables";
+import { SettingsError, SettingsIssues } from "./SettingsError";
 
 export type SettingsResults<T extends VariableObject> = {
     [K in keyof T]: T[K] extends Variable<infer U> ? Result<U, string[]> : never;

@@ -1,18 +1,10 @@
-import { IntegerVariable } from '@/variables/IntegerVariable';
-import { EnumVariable } from '@/variables/EnumVariable';
-import { NumberVariable } from '@/variables/NumberVariable';
-import { StringVariable } from '@/variables/StringVariable';
-import { BooleanVariable } from '@/variables/BooleanVariable';
-import { DateObjectVariable } from '@/variables/DateObjectVariable';
-import { JsonValidator, JsonVariable } from '@/variables/JsonVariable';
-import { ZodType, ZodTypeDef } from 'zod';
 import { DateTime } from 'luxon';
+import { ZodType, ZodTypeDef } from 'zod';
+
 import { DateObject, DateType, Result } from '@/util';
 import { Settings, SettingsValues } from '@/settings/Settings';
 import { DataObjectBuilder } from '@/data';
-import { VariableObject } from '@/variables';
-
-
+import { BooleanVariable, DateObjectVariable, EnumVariable, IntegerVariable, JsonValidator, JsonVariable, NumberVariable, StringVariable, Variable, VariableObject } from '@/variables';
 
 const numberVar = () => new NumberVariable();
 
@@ -29,12 +21,12 @@ const resolveDateType = (from?: RegExp | DateType): DateObjectVariable => new Da
 
 const dateObjVar = (from?: RegExp | DateType) => resolveDateType(from);
 
-const jsdateVar = (from?: RegExp | DateType) => resolveDateType(from).transform(d =>
+const jsdateVar = (from?: RegExp | DateType): Variable<Date> => resolveDateType(from).transform(d =>
     Result.success<Date>(DateTime.fromISO(DateObject.toISO(d)).toJSDate())
 );
 
 
-const dateVar = (from?: RegExp | DateType) => resolveDateType(from).transform(d =>
+const dateVar = (from?: RegExp | DateType): Variable<DateTime> => resolveDateType(from).transform(d =>
     Result.success<DateTime>(DateTime.fromISO(DateObject.toISO(d)))
 );
 
@@ -67,7 +59,7 @@ const vars = Object.seal({
     boolean: booleanVar,
     dateobject: dateObjVar,
     jsdate: jsdateVar,
-    date: dateVar,
+    luxdate: dateVar,
     enum: enumVar,
     json: jsonVar,
     tson: tsonVar,

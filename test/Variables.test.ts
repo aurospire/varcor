@@ -1,6 +1,4 @@
-import { DateObject, Result } from "@/util";
-import { StringValidator, Variable } from "@/variables";
-import { v } from '@/helpers';
+import { DateObject, Result, StringValidator, Variable, v } from "@";
 import { z } from "zod";
 
 describe('Variable', () => {
@@ -76,7 +74,7 @@ describe('NumberVariable', () => {
 
     it('should fail to parse invalid numbers', () => {
         expect(v1.parse('asb').success).toEqual(false);
-        expect(v1.parse('')).toEqual(Result.failure('must be a number'));
+        expect(v1.parse('')).toEqual(Result.failure(['must be a number']));
     });
 
     it('should apply min constraint', () => {
@@ -151,13 +149,13 @@ describe('StringVariable', () => {
         const isUppercase: StringValidator = (value) => {
             return value === value.toUpperCase()
                 ? Result.success(value)
-                : Result.failure('must be uppercase');
+                : Result.failure(['must be uppercase']);
         };
 
         const hasDigits: StringValidator = (value) => {
             return /\d/.test(value)
                 ? Result.success(value)
-                : Result.failure('must contain digits');
+                : Result.failure(['must contain digits']);
         };
 
         const v2 = v1.validate(isUppercase).validate(hasDigits);
@@ -299,7 +297,7 @@ describe('JsonVariable', () => {
                 if (data && data.name && typeof data.age === 'number') {
                     return Result.success(data);
                 } else {
-                    return Result.failure('Invalid JSON structure');
+                    return Result.failure(['Invalid JSON structure']);
                 }
             };
 
@@ -313,7 +311,7 @@ describe('JsonVariable', () => {
                 if (data && data.name && typeof data.age === 'number') {
                     return Result.success(data);
                 } else {
-                    return Result.failure('Invalid JSON structure');
+                    return Result.failure(['Invalid JSON structure']);
                 }
             };
 
