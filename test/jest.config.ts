@@ -3,6 +3,8 @@ import { Config } from '@jest/types';
 import nodefs from 'fs';
 import nodepath from 'path';
 
+import { jestAliases } from 'ts-unalias';
+
 const packagejson = JSON.parse(nodefs.readFileSync('package.json').toString());
 
 const modules = Object.entries({
@@ -34,7 +36,8 @@ const config: Config.InitialOptions = {
     moduleDirectories: ["node_modules", 'src'],
     moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
     moduleNameMapper: {
-        "^@/(.*)$": "<rootDir>/src/$1",
+        //"^@/(.*)$": "<rootDir>/src/$1",
+        ...jestAliases({ onJestAlias: true }),
         ...modules
     }
 };

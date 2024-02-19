@@ -1,6 +1,4 @@
-import { DateObject, Result } from "@/util";
-import { StringValidator, Variable } from "@/variables";
-import { v } from '@/helpers';
+import { DateObject, Result, StringValidator, Variable, v } from "@";
 import { z } from "zod";
 
 describe('Variable', () => {
@@ -76,7 +74,7 @@ describe('NumberVariable', () => {
 
     it('should fail to parse invalid numbers', () => {
         expect(v1.parse('asb').success).toEqual(false);
-        expect(v1.parse('')).toEqual(Result.failure('must be a number'));
+        expect(v1.parse('')).toEqual(Result.failure(['must be a number']));
     });
 
     it('should apply min constraint', () => {
