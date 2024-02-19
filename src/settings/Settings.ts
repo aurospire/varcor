@@ -54,6 +54,6 @@ export class Settings<V extends VariableObject> {
         return Object
             .entries(results)
             .filter(([key, result]) => !result.success)
-            .map(([key, result]) => ({ key, issues: result.issues }));
+            .map(([key, result]) => ({ key, issues: result.errors }));
     }
 }
