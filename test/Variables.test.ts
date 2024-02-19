@@ -1,6 +1,4 @@
-import { DateObject, Result } from "@/util";
-import { StringValidator, Variable } from "@/variables";
-import { v } from '@/helpers';
+import { DateObject, Result, StringValidator, Variable, v } from "@";
 import { z } from "zod";
 
 describe('Variable', () => {
