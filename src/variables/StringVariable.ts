@@ -6,6 +6,17 @@ import { Variable } from "./Variable";
  */
 export type StringValidator = (value: string) => Result<string, string[]>;
 
+const urlValidator: StringValidator = function url(value: string): Result<string, string[]> {
+    try {
+        const url = new URL(value);
+
+        return Result.success(value);
+    }
+    catch (error: any) {
+        return Result.failure([error.message]);
+    }
+};
+
 const regexValidator = (regex: RegExp) => (value: string): Result<string, string[]> => {
     const result = value.match(regex);
 
@@ -40,34 +51,85 @@ export class StringVariable extends Variable<string> {
         return 'string';
     }
 
-    /**
-     * Adds a validator or regular expression to the list of validators for the string variable and returns a new instance.
-     * @param validator A `StringValidator` function or a `RegExp` instance to use for validation.
-     * @param name An optional string to name the added StringValidator function.
-     * @returns A new `StringVariable` instance with the added validator.
-     */
-    validate(validator: StringValidator | RegExp, name?: string): StringVariable {
+    #validate(validator: StringValidator): StringVariable {
         const newVar = this.__clone();
 
-        let funcname: string;
-        let func: StringValidator;
-
-        if (typeof validator === 'function') {
-            funcname = name ? name : validator.name;
-            func = validator;
-        }
-        else {
-            funcname = name ? name : validator.toString();
-            func = regexValidator(validator);
-        }
-
-        const result = { [funcname]: (value: string) => func(value) }[funcname];
-
-        newVar.#validators.push(result);
+        newVar.#validators.push(validator);
 
         return newVar;
     }
 
+    /**
+     * Adds a validator to the list of validators for the string variable and returns a new instance.
+     * @param validator A `StringValidator` function to use for validation.
+     * @param name An optional string to name the added StringValidator function.
+     * @returns A new `StringVariable` instance with the added validator.
+     */
+    validate(validator: StringValidator, name?: string): StringVariable {
+        const result = name ? { [name]: (value: string) => validator(value) }[name] : validator;
+
+        return this.#validate(result);
+    }
+
+    /**
+     * Adds a regex validator to the list of validators for the string variable and returns a new instance.
+     * @param validator A  `RegExp` instance to use for validation.
+     * @param name An optional string to name the added StringValidator function.
+     * @returns A new `StringVariable` instance with the added validator.
+     */
+    regex(regex: RegExp, name?: string) {
+        const vname: string = name || regex.toString();
+
+        const vregex = regexValidator(regex);
+
+        const result = { [vname]: (value: string) => vregex(value) }[vname];
+
+        return this.#validate(result);
+    }
+
+    /**
+     * Adds a uuid validator to the list of validators for the string variable and returns a new instance.     
+     * @returns A new `StringVariable` instance with the added validator.
+     */
+    uuid(): StringVariable {
+        return this.regex(/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i, 'uuid');
+    }
+
+    /**
+     * Adds a email validator to the list of validators for the string variable and returns a new instance.     
+     * @returns A new `StringVariable` instance with the added validator.
+     */
+    email(): StringVariable {
+        return this.regex(/^(?!\.)(?!.*\.\.)([A-Z0-9_+-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i, 'email');
+    }
+
+    /**
+     * Adds a ipv4 validator to the list of validators for the string variable and returns a new instance.     
+     * @returns A new `StringVariable` instance with the added validator.
+     */
+    ipv4(): StringVariable {
+        return this.regex(/^(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))$/, 'ipv4');
+    }
+
+    /**
+     * Adds a ipv6 validator to the list of validators for the string variable and returns a new instance.     
+     * @returns A new `StringVariable` instance with the added validator.
+     */
+    ipv6(): StringVariable {
+        return this.regex(/^(([a-f0-9]{1,4}:){7}|::([a-f0-9]{1,4}:){0,6}|([a-f0-9]{1,4}:){1}:([a-f0-9]{1,4}:){0,5}|([a-f0-9]{1,4}:){2}:([a-f0-9]{1,4}:){0,4}|([a-f0-9]{1,4}:){3}:([a-f0-9]{1,4}:){0,3}|([a-f0-9]{1,4}:){4}:([a-f0-9]{1,4}:){0,2}|([a-f0-9]{1,4}:){5}:([a-f0-9]{1,4}:){0,1})([a-f0-9]{1,4}|(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2})))$/, 'ipv6');
+    }
+
+    /**
+     * Adds a ipv4 and ipv6 validator to the list of validators for the string variable and returns a new instance.     
+     * @returns A new `StringVariable` instance with the added validator.
+     */
+    ip(): StringVariable {
+        return this.ipv4().ipv6();
+    }
+
+    url(): StringVariable {
+        return this.#validate(urlValidator);
+    }
 
     /**
      * Parses and validates a string value using the set validators and/or regular expressions.

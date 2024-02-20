@@ -171,7 +171,7 @@ describe('StringVariable', () => {
         const alphanumericRegex = /^[a-zA-Z0-9]+$/;
         const noWhitespaceRegex = /^\S+$/;
 
-        const v3 = v1.validate(alphanumericRegex, 'AlphaNumeric').validate(noWhitespaceRegex);
+        const v3 = v1.regex(alphanumericRegex, 'AlphaNumeric').regex(noWhitespaceRegex);
 
         expect(v3.parse('Hello123')).toEqual(Result.success('Hello123'));
         expect(v3.parse('with space').success).toEqual(false);
