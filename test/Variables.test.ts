@@ -162,7 +162,7 @@ describe('StringVariable', () => {
 
         expect(v2.parse('HELLO123')).toEqual(Result.success('HELLO123'));
         expect(v2.parse('123')).toEqual(Result.success('123'));
-        expect(v2.parse('!@#')).toEqual(Result.success('!@#'));
+        expect(v2.parse('!@#')).toEqual(Result.failure(['must be uppercase', 'must contain digits']));
         expect(v2.parse('hello').success).toEqual(false);
     });
 

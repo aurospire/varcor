@@ -71,6 +71,7 @@ export class StringVariable extends Variable<string> {
 
                 if (!result.success) {
                     issues.push(...result.error);
+                    console.log(result.error, issues)
                 }
             }
 
