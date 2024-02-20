@@ -43,6 +43,7 @@ export class StringVariable extends Variable<string> {
     /**
      * Adds a validator or regular expression to the list of validators for the string variable and returns a new instance.
      * @param validator A `StringValidator` function or a `RegExp` instance to use for validation.
+     * @param name An optional string to name the added StringValidator function.
      * @returns A new `StringVariable` instance with the added validator.
      */
     validate(validator: StringValidator | RegExp, name?: string): StringVariable {
@@ -78,13 +79,9 @@ export class StringVariable extends Variable<string> {
             const issues: string[] = [];
 
             for (const validator of this.#validators) {
-                //const result = validator instanceof RegExp ? validateRegex(value, validator) : validator(value);
                 const result = validator(value);
 
-                if (!result.success) {
-                    issues.push(...result.error);
-                    console.log(result.error, issues, this.#validators);
-                }
+                if (!result.success) issues.push(...result.error);
             }
 
             return issues.length > 0 ? Result.failure(issues) : Result.success(value);

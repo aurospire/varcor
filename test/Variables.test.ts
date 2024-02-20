@@ -162,8 +162,9 @@ describe('StringVariable', () => {
 
         expect(v2.parse('HELLO123')).toEqual(Result.success('HELLO123'));
         expect(v2.parse('123')).toEqual(Result.success('123'));
-        expect(v2.parse('!@#')).toEqual(Result.failure(['must be uppercase', 'must contain digits']));
-        expect(v2.parse('hello').success).toEqual(false);
+        expect(v2.parse('!@#a')).toEqual(Result.failure(['must be uppercase', 'must contain digits']));
+        expect(v2.parse('!@#')).toEqual(Result.failure(['must contain digits']));
+        expect(v2.parse('hello')).toEqual(Result.failure(['must be uppercase', 'must contain digits']));        
     });
 
     it('should apply regex validators', () => {
