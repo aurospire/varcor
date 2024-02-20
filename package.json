@@ -3,6 +3,10 @@
     "description": "A tool for streamlined management of environment variables, offering normalization, type enforcement, and generation of configuration skeletons.",
     "author": "aurospire",
     "version": "0.2.2",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aurospire/varcor"
+    },
     "license": "MIT",
     "main": "dist/index.ts",
     "types": "dist/index.d.ts",
@@ -17,10 +21,6 @@
     },
     "config": {
         "watch": "./src;package*.json"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/aurospire/varcor"
     },
     "scripts": {
         "start": "node ./dist/index.js",
