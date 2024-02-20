@@ -146,13 +146,13 @@ describe('StringVariable', () => {
     });
 
     it('should apply custom validators', () => {
-        const isUppercase: StringValidator = (value) => {
+        function isUppercase(value: string) {
             return value === value.toUpperCase()
                 ? Result.success(value)
                 : Result.failure(['must be uppercase']);
         };
 
-        const hasDigits: StringValidator = (value) => {
+        function hasDigits(value: string) {
             return /\d/.test(value)
                 ? Result.success(value)
                 : Result.failure(['must contain digits']);
