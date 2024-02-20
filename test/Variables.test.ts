@@ -1,4 +1,4 @@
-import { DateObject, Result, StringValidator, Variable, v } from "@";
+import { DateObject, Result, Variable, v } from "@";
 import { z } from "zod";
 
 describe('Variable', () => {
@@ -146,7 +146,7 @@ describe('StringVariable', () => {
     });
 
     it('should apply custom validators', () => {
-        function isUppercase(value: string) {
+        const isUppercase = (value: string) => {
             return value === value.toUpperCase()
                 ? Result.success(value)
                 : Result.failure(['must be uppercase']);
@@ -158,20 +158,20 @@ describe('StringVariable', () => {
                 : Result.failure(['must contain digits']);
         };
 
-        const v2 = v1.validate(isUppercase).validate(hasDigits);
+        const v2 = v1.validate(isUppercase, 'isUpperCase').validate(hasDigits, 'hasDigits');
 
         expect(v2.parse('HELLO123')).toEqual(Result.success('HELLO123'));
         expect(v2.parse('123')).toEqual(Result.success('123'));
         expect(v2.parse('!@#a')).toEqual(Result.failure(['must be uppercase', 'must contain digits']));
         expect(v2.parse('!@#')).toEqual(Result.failure(['must contain digits']));
-        expect(v2.parse('hello')).toEqual(Result.failure(['must be uppercase', 'must contain digits']));        
+        expect(v2.parse('hello')).toEqual(Result.failure(['must be uppercase', 'must contain digits']));
     });
 
     it('should apply regex validators', () => {
         const alphanumericRegex = /^[a-zA-Z0-9]+$/;
         const noWhitespaceRegex = /^\S+$/;
 
-        const v3 = v1.validate(alphanumericRegex).validate(noWhitespaceRegex);
+        const v3 = v1.validate(alphanumericRegex, 'AlphaNumeric').validate(noWhitespaceRegex);
 
         expect(v3.parse('Hello123')).toEqual(Result.success('Hello123'));
         expect(v3.parse('with space').success).toEqual(false);

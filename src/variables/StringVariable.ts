@@ -81,7 +81,10 @@ export class StringVariable extends Variable<string> {
             for (const validator of this.#validators) {
                 const result = validator(value);
 
-                if (!result.success) issues.push(...result.error);
+                if (!result.success) {
+                    issues.push(...result.error);
+                    console.log(result.error, issues, this.#validators);
+                }
             }
 
             return issues.length > 0 ? Result.failure(issues) : Result.success(value);
