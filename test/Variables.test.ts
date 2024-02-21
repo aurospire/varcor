@@ -191,57 +191,6 @@ describe('StringVariable', () => {
         expect(vEmail.parse('example@example.com')).toEqual(Result.success('example@example.com'));
         expect(vEmail.parse('invalid-email')).toEqual(Result.failure(['must be an email']));
     });
-
-    it('should validate IPv4 addresses', () => {
-        const vIPv4 = v1.ipv4();
-
-        expect(vIPv4.parse('192.168.1.1')).toEqual(Result.success('192.168.1.1'));
-        expect(vIPv4.parse('invalid-ip')).toEqual(Result.failure(['must be an ipv4']));
-    });
-
-    it('should validate different forms of IPv6 addresses', () => {
-        const vIPv6 = v1.ipv6();
-
-        // Full forms
-        expect(vIPv6.parse('2001:0db8:0000:0042:0000:8a2e:0370:7334')).toEqual(Result.success('2001:0db8:0000:0042:0000:8a2e:0370:7334'));
-        expect(vIPv6.parse('2001:0db8:0000:0042:0000:8a2e:0370:7334')).toEqual(Result.success('2001:0db8:0000:0042:0000:8a2e:0370:7334'));
-        expect(vIPv6.parse('2001:db8:0:42::8a2e:370:7334')).toEqual(Result.success('2001:db8:0:42::8a2e:370:7334'));
-
-        // Compressed forms
-        expect(vIPv6.parse('::')).toEqual(Result.success('::')); // Unspecified address
-        expect(vIPv6.parse('::1')).toEqual(Result.success('::1')); // Loopback
-        expect(vIPv6.parse('2001::1')).toEqual(Result.success('2001::1'));
-        expect(vIPv6.parse('2001:0db8::1')).toEqual(Result.success('2001:0db8::1'));
-        expect(vIPv6.parse('2001:db8:85a3:0:0:8a2e:370:7334')).toEqual(Result.success('2001:db8:85a3:0:0:8a2e:370:7334'));
-
-        // Invalid forms
-        expect(vIPv6.parse('2001:db8:85a3::8a2e::370:7334')).toEqual(Result.failure(['must be an ipv6']));
-        expect(vIPv6.parse('2001:db8:85a3::8a2e:370:7334:')).toEqual(Result.failure(['must be an ipv6']));
-    });
-
-    // it('should validate IPv4-mapped IPv6 addresses', () => {
-    //     const vIPv6 = v1.ipv6();
-
-    //     // IPv4-mapped IPv6 addresses
-    //     // expect(vIPv6.parse('::192.0.2.128')).toEqual(Result.success('::192.0.2.128'));
-    //     // expect(vIPv6.parse('::ffff:192.0.2.128')).toEqual(Result.success('::ffff:192.0.2.128'));
-    //     // expect(vIPv6.parse('::ffff:0:192.0.2.128')).toEqual(Result.success('::ffff:0:192.0.2.128'));
-    //     expect(vIPv6.parse('0:0:0:0:0:ffff:0:192.0.2.128')).toEqual(Result.success('0:0:0:0:0:ffff:0:192.0.2.128'));
-        
-    //     // Invalid IPv4-mapped IPv6 addresses
-    //     expect(vIPv6.parse('0:0:0:0:0:ffff:192.0.2.128')).toEqual(Result.success('0:0:0:0:0:ffff:192.0.2.128'));
-    //     expect(vIPv6.parse('::ffff:192.0.2')).toEqual(Result.failure(['must be an ipv6']));
-    //     expect(vIPv6.parse('::ffff:256.0.2.128')).toEqual(Result.failure(['must be an ipv6']));
-    //     expect(vIPv6.parse('::ffff:192.0.2.128.')).toEqual(Result.failure(['must be an ipv6']));
-    // });
-
-    it('should validate both IPv4 and IPv6 addresses', () => {
-        const vIP = v1.ip();
-
-        expect(vIP.parse('192.168.1.1')).toEqual(Result.success('192.168.1.1'));
-        expect(vIP.parse('2001:0db8:85a3:0000:0000:8a2e:0370:7334')).toEqual(Result.success('2001:0db8:85a3:0000:0000:8a2e:0370:7334'));
-        expect(vIP.parse('invalid-ip')).toEqual(Result.failure(['must be an ipv4', 'must be an ipv6']));
-    });
 });
 
 describe('EnumVariable', () => {

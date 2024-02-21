@@ -1,4 +1,4 @@
-import { Ip, Result } from "@/util";
+import { Result } from "@/util";
 import { Variable } from "./Variable";
 
 /**
@@ -101,30 +101,6 @@ export class StringVariable extends Variable<string> {
      */
     email(): StringVariable {
         return this.regex(/^(?!\.)(?!.*\.\.)([A-Z0-9_+-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i, 'email', 'must be an email');
-    }
-
-    /**
-     * Adds a ipv4 validator to the list of validators for the string variable and returns a new instance.     
-     * @returns A new `StringVariable` instance with the added validator.
-     */
-    ipv4(): StringVariable {
-        return this.regex(Ip.v4, 'ipv4', 'must be an ipv4');
-    }
-
-    /**
-     * Adds a ipv6 validator to the list of validators for the string variable and returns a new instance.     
-     * @returns A new `StringVariable` instance with the added validator.
-     */
-    ipv6(): StringVariable {
-        return this.regex(Ip.v6, 'ipv6v4', 'must be an ipv6');
-    }
-    
-    /**
-     * Adds a ipv4 and ipv6 validator to the list of validators for the string variable and returns a new instance.     
-     * @returns A new `StringVariable` instance with the added validator.
-     */
-    ip(): StringVariable {
-        return this.ipv4().ipv6();
     }
 
     /**
