@@ -1,5 +1,5 @@
 import nodefs from 'fs';
-import { parseEnv } from "@/env";
+import { parseDotEnv } from "@/dotenv";
 import { DataObject } from './DataObject';
 
 /**
@@ -52,21 +52,6 @@ export class DataObjectBuilder {
     }
 
     /**
-     * Parses a `.env` format string and adds the resulting environment variables to the data object.
-     * @param env A string in `.env` file format.
-     * @throws An error if parsing fails.
-     * @returns A new instance of `DataObjectBuilder` including the parsed environment variables for chaining.
-     */
-    addEnvFormat(env: string): DataObjectBuilder {
-        const result = parseEnv(env);
-
-        if (result.success)
-            return this.addObject(result.value);
-        else
-            throw new Error(JSON.stringify(result.error));
-    }
-
-    /**
      * Parses a JSON string and adds the resulting object to the data object.
      * @param json A JSON-formatted string.
      * @returns A new instance of `DataObjectBuilder` including the parsed JSON object for chaining.
@@ -76,20 +61,35 @@ export class DataObjectBuilder {
     }
 
     /**
-     * Reads and parses an environment variable file in `.env` format and adds the variables to the data object.
-     * @param path The file path to the `.env` file.
-     * @param mustExist If true, throws an error if the file does not exist.
-     * @param condition If false, skips adding the file content.
+     * Parses a `.env` format string and adds the resulting environment variables to the data object.
+     * @param env A string in `.env` file format.
+     * @throws An error if parsing fails.
+     * @returns A new instance of `DataObjectBuilder` including the parsed environment variables for chaining.
+     */
+    addDotEnvFormat(env: string): DataObjectBuilder {
+        const result = parseDotEnv(env);
+
+        if (result.success)
+            return this.addObject(result.value);
+        else
+            throw new Error(JSON.stringify(result.error));
+    }
+
+    /**
+     * Reads and parses a JSON file and adds the resulting object to the data object.
+     * @param path The file path to the JSON file.
+     * @param when If false, skips adding the file content (defaults to true).
+     * @param optional If false, throws an error if the file does not exist (defaults to true).
      * @throws An error if the file is missing and mustExist is true.
      * @returns A new instance of `DataObjectBuilder` for chaining.
      */
-    addEnvFile(path: string, mustExist: boolean = true, condition: boolean = true): DataObjectBuilder {
-        if (condition) {
+    addJsonFile(path: string, when: boolean = true, optional: boolean = true): DataObjectBuilder {
+        if (when) {
             if (nodefs.existsSync(path)) {
                 const data = nodefs.readFileSync(path).toString();
-                return this.addEnvFormat(data);
+                return this.addJsonFormat(data);
             }
-            else if (mustExist) {
+            else if (!optional) {
                 throw new Error(`Missing File ${path}`);
             }
         }
@@ -97,20 +97,20 @@ export class DataObjectBuilder {
     }
 
     /**
-     * Reads and parses a JSON file and adds the resulting object to the data object.
-     * @param path The file path to the JSON file.
-     * @param mustExist If true, throws an error if the file does not exist.
-     * @param condition If false, skips adding the file content.
+     * Reads and parses an environment variable file in `.env` format and adds the variables to the data object.
+     * @param path The file path to the `.env` file.
+     * @param when If false, skips adding the file content (defaults to true).
+     * @param optional If false, throws an error if the file does not exist (defaults to true).
      * @throws An error if the file is missing and mustExist is true.
      * @returns A new instance of `DataObjectBuilder` for chaining.
      */
-    addJsonFile(path: string, mustExist: boolean = true, condition: boolean = true): DataObjectBuilder {
-        if (condition) {
+    addDotEnvFile(path: string, when: boolean = true, optional: boolean = true): DataObjectBuilder {
+        if (when) {
             if (nodefs.existsSync(path)) {
                 const data = nodefs.readFileSync(path).toString();
-                return this.addJsonFormat(data);
+                return this.addDotEnvFormat(data);
             }
-            else if (mustExist) {
+            else if (!optional) {
                 throw new Error(`Missing File ${path}`);
             }
         }
