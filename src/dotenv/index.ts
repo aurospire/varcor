@@ -4,7 +4,7 @@ import { Result } from "@/util";
  * Represents an issue encountered while parsing an environment variable definition.
  * It provides details about the location and nature of the parsing issue.
  */
-export type EnvIssue = {
+export type DotEnvIssue = {
     /**
      * The line number in the input string where the issue was encountered.
      */
@@ -41,9 +41,9 @@ const varRegex = new RegExp(`^\\s*((?:export)\\s+)?(?<key>[A-Za-z_][A-Za-z0-9_]*
  * @returns A `Result` object that contains either a record of parsed environment variables (on success)
  *          or an array of `EnvIssue` detailing parsing errors (on failure).
  */
-export const parseEnv = (data: string): Result<Record<string, string>, EnvIssue[]> => {
+export const parseDotEnv = (data: string): Result<Record<string, string>, DotEnvIssue[]> => {
     const lines = data.split(/(?:\r\n?)|\n/g);
-    const issues: EnvIssue[] = [];
+    const issues: DotEnvIssue[] = [];
     const vars: Record<string, string> = {};
 
     for (let i = 0; i < lines.length; i++) {

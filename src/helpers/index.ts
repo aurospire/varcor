@@ -68,7 +68,7 @@ const jsdateVar = (from?: RegExp | DateType): Variable<Date> => resolveDateType(
  * @param from Optional format or type for the date parsing.
  * @returns A `Variable` instance that produces `luxon` `DateTime` objects.
  */
-const dateVar = (from?: RegExp | DateType): Variable<DateTime> => resolveDateType(from).transform(d =>
+const luxdateVar = (from?: RegExp | DateType): Variable<DateTime> => resolveDateType(from).transform(d =>
     Result.success<DateTime>(DateTime.fromISO(DateObject.toISO(d)))
 );
 
@@ -107,8 +107,8 @@ const data = Object.seal({
     new: () => new DataObjectBuilder(),
     env: () => new DataObjectBuilder().addEnv(),
     obj: (data: Record<string, any>) => new DataObjectBuilder().addObject(data),
-    strings: (data: Record<string, any>) => new DataObjectBuilder().addObject(data),
-    json: (data: string) => new DataObjectBuilder().addJsonFormat(data)
+    json: (data: string) => new DataObjectBuilder().addJsonFormat(data),
+    dotenv: (data: string) => new DataObjectBuilder().addDotEnvFormat(data),
 });
 
 /**
@@ -119,9 +119,9 @@ const vars = Object.seal({
     integer: integerVar,
     string: stringVar,
     boolean: booleanVar,
-    dateobject: dateObjVar,
+    dateobj: dateObjVar,
     jsdate: jsdateVar,
-    luxdate: dateVar,
+    luxdate: luxdateVar,
     enum: enumVar,
     json: jsonVar,
     tson: tsonVar,
@@ -132,9 +132,9 @@ export {
     integerVar as integer,
     stringVar as string,
     booleanVar as boolean,
-    dateObjVar as dateobject,
+    dateObjVar as dateobj,
     jsdateVar as jsdate,
-    dateVar as date,
+    luxdateVar as luxdate,
     enumVar as enum,
     jsonVar as json,
     tsonVar as tson,
