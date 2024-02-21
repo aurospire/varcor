@@ -92,7 +92,7 @@ export class StringVariable extends Variable<string> {
      * @returns A new `StringVariable` instance with the added validator.
      */
     uuid(): StringVariable {
-        return this.regex(/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i, 'uuid');
+        return this.regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, 'uuid');
     }
 
     /**
@@ -116,7 +116,7 @@ export class StringVariable extends Variable<string> {
      * @returns A new `StringVariable` instance with the added validator.
      */
     ipv6(): StringVariable {
-        return this.regex(/^(([a-f0-9]{1,4}:){7}|::([a-f0-9]{1,4}:){0,6}|([a-f0-9]{1,4}:){1}:([a-f0-9]{1,4}:){0,5}|([a-f0-9]{1,4}:){2}:([a-f0-9]{1,4}:){0,4}|([a-f0-9]{1,4}:){3}:([a-f0-9]{1,4}:){0,3}|([a-f0-9]{1,4}:){4}:([a-f0-9]{1,4}:){0,2}|([a-f0-9]{1,4}:){5}:([a-f0-9]{1,4}:){0,1})([a-f0-9]{1,4}|(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2})))$/, 'ipv6');
+        return this.regex(/^(([0-9a-f]{1,4}:){7}|::([0-9a-f]{1,4}:){0,6}|([0-9a-f]{1,4}:){1}:([0-9a-f]{1,4}:){0,5}|([0-9a-f]{1,4}:){2}:([0-9a-f]{1,4}:){0,4}|([0-9a-f]{1,4}:){3}:([0-9a-f]{1,4}:){0,3}|([0-9a-f]{1,4}:){4}:([0-9a-f]{1,4}:){0,2}|([0-9a-f]{1,4}:){5}:([0-9a-f]{1,4}:){0,1})([0-9a-f]{1,4}|(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2})))$/i, 'ipv6');
     }
 
     /**
@@ -127,6 +127,10 @@ export class StringVariable extends Variable<string> {
         return this.ipv4().ipv6();
     }
 
+    /**
+     * Adds a url validator to the list of validators for the string variable and returns a new instance.     
+     * @returns A new `StringVariable` instance with the added validator.
+     */
     url(): StringVariable {
         return this.#validate(urlValidator);
     }
