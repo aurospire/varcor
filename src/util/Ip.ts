@@ -1,7 +1,11 @@
 /**
  * Returns a regex pattern for grouping IP address segments.
  * @param value - The value of the segment.
- * @param of - Specifies the type of the segment. Defaults to true.
+ * @param of - Specifies the type of the segment.
+ *             If `false`, it creates a match group.
+ *             If `true`, it creates a capture group.
+ *             If a string, it creates a named capture group with the specified name.
+ *             Defaults to `true`.
  * @param min - Minimum occurrence of the segment.
  * @param max - Maximum occurrence of the segment.
  * @returns A regex pattern for the IP address segment.
@@ -38,7 +42,7 @@ const ipv4Unit = '(?:25[0-5])|(?:2[0-4][0-9])|(?:1[0-9]{2})|(?:[0-9]{1,2})';
 /**
  * Regex pattern for IPv4 address.
  */
-const ipv4 = group(ipv4Unit, 'class') + '\.' + group(ipv4Unit, 'network') + '\.' + group(ipv4Unit, 'subnet') + '\.' + group(ipv4Unit, 'device');
+const ipv4 = group(ipv4Unit, 'class') + '\\.' + group(ipv4Unit, 'network') + '\\.' + group(ipv4Unit, 'subnet') + '\\.' + group(ipv4Unit, 'device');
 
 /**
  * Regex pattern for a unit in IPv6 address.
@@ -86,10 +90,9 @@ const ipv6Prefix = '::' + '|' + group([
  */
 const ipv6Plain = ipv6Prefix + group(ipv6Unit, 'suffix');
 
-/**
- * Regex pattern for mixed IPv6 and IPv4 address.
- */
-const ipv6Mixed = ipv6Prefix + group(ipv6Unit + '|' + group(ipv4, 'ipv4'), 'suffix');
+// Incorrect - as each region is 2 bytes, and ipv4 is 4 bytes, the last TWO have to embedded
+// so its 0011:2233:4455:6677:8899:AABB:<IPV4>
+const ipv6Embedded = ipv6Prefix + group(ipv6Unit + '|' + group(ipv4, 'ipv4'), 'suffix');
 
 /**
  * Object containing sealed regex patterns for IP addresses.
@@ -106,9 +109,5 @@ export const Ip = Object.seal(
          */
         v6: new RegExp(`^(${ipv6Plain})$`, 'i'),
 
-        /**
-         * Regex pattern for mixed IPv6 and IPv4 address.
-         */
-        v6v4: new RegExp(`^(${ipv6Mixed})$`, 'i')
     } as const
 );

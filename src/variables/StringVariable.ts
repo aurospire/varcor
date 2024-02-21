@@ -147,12 +147,12 @@ export class StringVariable extends Variable<string> {
             for (const validator of this.#validators) {
                 const result = validator(value);
 
-                if (!result.success) {
-                    issues.push(...result.error);
-                    console.log(result.error, issues, this.#validators);
+                if (result.success) {
+                    return result;
                 }
                 else {
-                    return result;
+                    issues.push(...result.error);
+                    console.log(result.error, issues, this.#validators);
                 }
             }
 
