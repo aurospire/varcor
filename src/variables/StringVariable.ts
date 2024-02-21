@@ -152,7 +152,7 @@ export class StringVariable extends Variable<string> {
                 }
                 else {
                     issues.push(...result.error);
-                    console.log(result.error, issues, this.#validators);
+                    //console.log(result.error, issues, this.#validators);
                 }
             }
 
