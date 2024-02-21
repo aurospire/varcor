@@ -1,4 +1,4 @@
-import { Result } from "@/util";
+import { Ip, Result } from "@/util";
 import { Variable } from "./Variable";
 
 /**
@@ -17,13 +17,13 @@ const urlValidator: StringValidator = function url(value: string): Result<string
     }
 };
 
-const regexValidator = (regex: RegExp) => (value: string): Result<string, string[]> => {
+const regexValidator = (regex: RegExp, error: string) => (value: string): Result<string, string[]> => {
     const result = value.match(regex);
 
     if (result)
         return Result.success(result[0]);
     else
-        return Result.failure([`must match ${regex}`]);
+        return Result.failure([error]);
 };
 
 /**
@@ -77,10 +77,10 @@ export class StringVariable extends Variable<string> {
      * @param name An optional string to name the added StringValidator function.
      * @returns A new `StringVariable` instance with the added validator.
      */
-    regex(regex: RegExp, name?: string) {
+    regex(regex: RegExp, name?: string, error?: string) {
         const vname: string = name || regex.toString();
 
-        const vregex = regexValidator(regex);
+        const vregex = regexValidator(regex, error || `must be ${name}`);
 
         const result = { [vname]: (value: string) => vregex(value) }[vname];
 
@@ -92,7 +92,7 @@ export class StringVariable extends Variable<string> {
      * @returns A new `StringVariable` instance with the added validator.
      */
     uuid(): StringVariable {
-        return this.regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, 'uuid');
+        return this.regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, 'uuid', 'must be a uuid');
     }
 
     /**
@@ -100,7 +100,7 @@ export class StringVariable extends Variable<string> {
      * @returns A new `StringVariable` instance with the added validator.
      */
     email(): StringVariable {
-        return this.regex(/^(?!\.)(?!.*\.\.)([A-Z0-9_+-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i, 'email');
+        return this.regex(/^(?!\.)(?!.*\.\.)([A-Z0-9_+-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i, 'email', 'must be an email');
     }
 
     /**
@@ -108,7 +108,7 @@ export class StringVariable extends Variable<string> {
      * @returns A new `StringVariable` instance with the added validator.
      */
     ipv4(): StringVariable {
-        return this.regex(/^(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))$/, 'ipv4');
+        return this.regex(Ip.v4, 'ipv4', 'must be an ipv4');
     }
 
     /**
@@ -116,9 +116,9 @@ export class StringVariable extends Variable<string> {
      * @returns A new `StringVariable` instance with the added validator.
      */
     ipv6(): StringVariable {
-        return this.regex(/^(([0-9a-f]{1,4}:){7}|::([0-9a-f]{1,4}:){0,6}|([0-9a-f]{1,4}:){1}:([0-9a-f]{1,4}:){0,5}|([0-9a-f]{1,4}:){2}:([0-9a-f]{1,4}:){0,4}|([0-9a-f]{1,4}:){3}:([0-9a-f]{1,4}:){0,3}|([0-9a-f]{1,4}:){4}:([0-9a-f]{1,4}:){0,2}|([0-9a-f]{1,4}:){5}:([0-9a-f]{1,4}:){0,1})([0-9a-f]{1,4}|(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2})))$/i, 'ipv6');
+        return this.regex(Ip.v6, 'ipv6v4', 'must be an ipv6');
     }
-
+    
     /**
      * Adds a ipv4 and ipv6 validator to the list of validators for the string variable and returns a new instance.     
      * @returns A new `StringVariable` instance with the added validator.
@@ -151,9 +151,12 @@ export class StringVariable extends Variable<string> {
                     issues.push(...result.error);
                     console.log(result.error, issues, this.#validators);
                 }
+                else {
+                    return result;
+                }
             }
 
-            return issues.length > 0 ? Result.failure(issues) : Result.success(value);
+            return Result.failure(issues);
         }
         else {
             return Result.success(value);
