@@ -215,8 +215,8 @@ describe('StringVariable', () => {
         expect(vIPv6.parse('2001:db8:85a3:0:0:8a2e:370:7334')).toEqual(Result.success('2001:db8:85a3:0:0:8a2e:370:7334'));
 
         // Invalid forms
-        expect(vIPv6.parse('2001:db8:85a3::8a2e::370:7334')).toEqual(Result.failure(['ipv6']));
-        expect(vIPv6.parse('2001:db8:85a3::8a2e:370:7334:')).toEqual(Result.failure(['ipv6']));
+        expect(vIPv6.parse('2001:db8:85a3::8a2e::370:7334')).toEqual(Result.failure(['must be ipv6']));
+        expect(vIPv6.parse('2001:db8:85a3::8a2e:370:7334:')).toEqual(Result.failure(['must be ipv6']));
     });
 
     it('should validate IPv4-mapped IPv6 addresses', () => {
@@ -229,9 +229,9 @@ describe('StringVariable', () => {
         expect(vIPv6.parse('0:0:0:0:0:ffff:0:192.0.2.128')).toEqual(Result.success('0:0:0:0:0:ffff:0:192.0.2.128'));
 
         // Invalid IPv4-mapped IPv6 addresses
-        expect(vIPv6.parse('::ffff:256.0.2.128')).toEqual(Result.failure(['ipv6']));
-        expect(vIPv6.parse('::ffff:192.0.2')).toEqual(Result.failure(['ipv6']));
-        expect(vIPv6.parse('::ffff:192.0.2.128.')).toEqual(Result.failure(['ipv6']));
+        expect(vIPv6.parse('::ffff:256.0.2.128')).toEqual(Result.failure(['must be ipv6']));
+        expect(vIPv6.parse('::ffff:192.0.2')).toEqual(Result.failure(['must be ipv6']));
+        expect(vIPv6.parse('::ffff:192.0.2.128.')).toEqual(Result.failure(['must be ipv6']));
     });
 
     it('should validate both IPv4 and IPv6 addresses', () => {
