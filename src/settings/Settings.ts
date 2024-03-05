@@ -22,7 +22,7 @@ export type SettingsResults<T extends VariableObject> = {
  *
  * @template T - A type extending `VariableObject`, representing a structured map of `Variable` instances.
  */
-export type SettingsValues<T extends VariableObject> = {
+export type SettingsValues<T extends VariableObject | Settings<any>> = T extends Settings<infer V> ? SettingsValues<V> : {
     [K in keyof T]: T[K] extends Variable<infer U> ? U : never;
 };
 
