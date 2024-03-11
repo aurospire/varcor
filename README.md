@@ -2,11 +2,6 @@
 
 `varcor` is a tool for streamlined management of config values, offering normalization and type enforcement.
 
-## Features
-
-- **Type Enforcement**: Strongly type your environment variables to prevent runtime errors.
-- **Normalization**: Automatically handle the normalization of environment variables to conform to expected formats.
-
 ## Installation
 
 To get started with varcor, install the package via npm:
@@ -14,7 +9,7 @@ To get started with varcor, install the package via npm:
 `npm install varcor`
 
 ## Result
-A foundational type is the `Result` type - all validation results in one of these types.
+The `Result` type is used to return values or errors throught varcor.
 
 ```typescript
 type ResultSuccess<T> = { success: true; value: T; };
@@ -27,12 +22,13 @@ type Result<T, F> = ResultSuccess<T> | ResultFailure<F>;
 const Result = Object.seal({
     success: <T>(value: T): ResultSuccess<T> => ({ success: true, value }),
     failure: <F>(error: F): ResultFailure<F> => ({ success: false, error })
-});
+} as const);
 ```
 
 ## Variables
+The `Variable` class is used to create an instance of a Variable validator/transformer.
+
 ### Common Functionalities
-The `Variable` class is the core of Varcor.
 
 #### Parsing Values
 The primary method of the class is `parse`. This will take an optional string and return a Result of `T` or a list of error strings.
@@ -233,17 +229,15 @@ const CONFIG = v.tson(MY_SCHEMA);
 
 ### DataObject
 
-`DataObject` is a simple key-value mapping where values are either strings or `undefined`. It's typically used to represent configuration settings:
+`DataObject` is a simple key-value mapping where values are either strings or `undefined`. 
 
 ```typescript
 type DataObject = { [key: string]: string | undefined; };
 ```
 
-This type is useful when you want to ensure all keys in an object have string values or are explicitly `undefined`, making it ideal for configuration data.
-
 ### DataObjectBuilder
 
-`DataObjectBuilder` provides a fluent interface to incrementally build a `DataObject`. It supports adding data from environment variables, JSON strings, `.env` files, and more.
+The `DataObjectBuilder` class provides an interface to incrementally build a `DataObject`. It supports adding data from environment variables, JSON strings, `.env` files, and more.
 DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
 
 #### Basic Usage
@@ -405,7 +399,3 @@ try {
 ```
 
 The `parseValues` method ensures that all settings are validated according to their definitions. If validation passes, you get a type-safe and easily accessible configuration object. If validation fails, the error provides detailed information about which settings were invalid and why.
-
-## Conclusion
-
-varcor offers a powerful and flexible solution for managing environment variables in your Node.js applications. By leveraging its helper functions and fluent API, you can ensure that your application's configuration is robust, type-safe, and easy to maintain.
