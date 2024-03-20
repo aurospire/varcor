@@ -10,9 +10,11 @@ import { SettingsError, SettingsIssues } from "./SettingsError";
  *
  * @template T - A type extending `VariableObject`, representing a structured map of `Variable` instances.
  */
-export type SettingsResults<T extends VariableObject> = {
-    [K in keyof T]: T[K] extends Variable<infer U> ? Result<U, string[]> : never;
-};
+export type InferResults<T extends Variable<any> | VariableObject | Settings<any>> =
+    T extends Variable<infer V> ? Result<V, string[]> :
+    T extends Settings<infer V> ? InferValues<V> : {
+        [K in keyof T]: T[K] extends Variable<infer U> ? Result<U, string[]> : never;
+    };
 
 /**
  * Similar to `SettingsResults`, but instead of mapping each key in a `VariableObject` to a `Result`, it maps each key
@@ -22,9 +24,12 @@ export type SettingsResults<T extends VariableObject> = {
  *
  * @template T - A type extending `VariableObject`, representing a structured map of `Variable` instances.
  */
-export type SettingsValues<T extends VariableObject | Settings<any>> = T extends Settings<infer V> ? SettingsValues<V> : {
-    [K in keyof T]: T[K] extends Variable<infer U> ? U : never;
-};
+export type InferValues<T extends Variable<any> | VariableObject | Settings<any>> =
+    T extends Variable<infer V> ? V :
+    T extends Settings<infer V> ? InferValues<V> : {
+        [K in keyof T]: T[K] extends Variable<infer U> ? U : never;
+    };
+
 
 /**
  * The `Settings` class is responsible for parsing a collection of settings based on a provided map of `Variable` instances.
@@ -54,7 +59,7 @@ export class Settings<V extends VariableObject> {
      * @param data - The data source containing the settings to be parsed, either as a `DataObject` or a `DataObjectBuilder`.
      * @returns A `SettingsResults` object containing the parse results for each setting.
      */
-    parseResults(data: DataObject | DataObjectBuilder): SettingsResults<V> {
+    parseResults(data: DataObject | DataObjectBuilder): InferResults<V> {
         if (data instanceof DataObjectBuilder) {
             data = data.toDataObject();
         }
@@ -78,7 +83,7 @@ export class Settings<V extends VariableObject> {
      * @returns A `SettingsValues` object containing only the successfully parsed settings values.
      * @throws `SettingsError` containing the issues encountered during parsing if any setting fails to parse.
      */
-    parseValues(data: DataObject | DataObjectBuilder): SettingsValues<V> {
+    parseValues(data: DataObject | DataObjectBuilder): InferValues<V> {
         const results = this.parseResults(data);
         const errors = this.filterIssues(results);
 
@@ -87,7 +92,7 @@ export class Settings<V extends VariableObject> {
         }
 
         return Object.fromEntries(
-            Object.entries(results).map(([key, result]) => [key, result.value])
+            Object.entries(results).map(([key, result]) => [key, (result as any).value])
         ) as any;
     }
 
@@ -98,10 +103,10 @@ export class Settings<V extends VariableObject> {
      * @param results - The `SettingsResults` object containing the parse results for each setting.
      * @returns An array of `SettingsIssues`, with each element containing the key of the setting and the associated error messages.
      */
-    filterIssues(results: SettingsResults<V>): SettingsIssues[] {
+    filterIssues(results: InferResults<V>): SettingsIssues[] {
         return Object.entries(results)
-            .filter(([key, result]: [string, Result<unknown, string[]>]) => !result.success)
-            .map(([key, result]: [string, ResultFailure<string[]>]) => ({
+            .filter(([key, result]: [string, any]) => !result.success)
+            .map(([key, result]: [string, any]) => ({
                 key,
                 issues: result.error,
             }));
