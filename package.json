@@ -2,7 +2,7 @@
     "name": "varcor",
     "description": "A tool for streamlined management of environment variables, offering normalization, type enforcement, and generation of configuration skeletons.",
     "author": "aurospire",
-    "version": "0.5.1",
+    "version": "0.6.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/aurospire/varcor"
