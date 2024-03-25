@@ -67,7 +67,7 @@ export class Settings<V extends VariableObject> {
         const results: any = {};
 
         for (const [key, variable] of Object.entries(this.#variables)) {
-            const value = data[key];
+            const value = data[variable.name ?? key];
             const result = variable.parse(value);
             results[key] = result;
         }

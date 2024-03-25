@@ -144,19 +144,22 @@ const result = <V extends Variable<unknown>>(name: string, variable: V, data: Da
  * Retrieves the value of a variable from the provided data object.
  * Throws a SettingsError if parsing fails.
  * @template V The type of the variable.
- * @param {string} name The name of the variable in the data object.
  * @param {V} variable The variable to retrieve from the data object.
  * @param {DataObject} data The data object containing the variable's value.
  * @returns {InferValues<V>} The value of the variable.
  * @throws {SettingsError} If parsing fails.
  */
-const value = <V extends Variable<unknown>>(name: string, variable: V, data: DataObject = dataObj.env().toDataObject()): InferValues<V> => {
-    const result = variable.parse(data[name]);
+const value = <V extends Variable<unknown>>(variable: V, data: DataObject = dataObj.env().toDataObject()): InferValues<V> => {
+
+    if (!variable.name)
+        throw new Error('Variable needs a name');
+
+    const result = variable.parse(data[variable.name]);
 
     if (result.success)
         return result.value as InferValues<V>;
     else
-        throw new SettingsError([{ key: name, issues: result.error }]);
+        throw new SettingsError([{ key: variable.name, issues: result.error }]);
 };
 
 
