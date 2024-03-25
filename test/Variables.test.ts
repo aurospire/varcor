@@ -6,39 +6,47 @@ describe('Variable', () => {
         const v0: Variable<number> = new Variable<number>();
         const v1 = v0.optional();
         const v2 = v1.defaultTo(10);
+        const v3 = v0.from('NAME');
 
-        // Immutability checks
+        // Immutability checks        
         expect(v0.isOptional).toEqual(false);
         expect(v1.isOptional).toEqual(true);
         expect(v2.isOptional).toEqual(false);
+        expect(v3.isOptional).toEqual(false);
 
         expect(v0.default).toEqual(undefined);
         expect(v1.default).toEqual(undefined);
         expect(v2.default).toEqual(10);
+        expect(v3.default).toEqual(undefined);
+
+        expect(v0.name).toEqual(undefined);
+        expect(v1.name).toEqual(undefined);
+        expect(v2.name).toEqual(undefined);
+        expect(v3.name).toEqual('NAME');
     });
 
     it('should test .required method', () => {
-        const v: Variable = new Variable();
+        const v0 = new Variable();
 
         // .required method tests
-        expect(v.parse().success).toEqual(false);
-        expect(v.parse('').success).toEqual(false);
+        expect(v0.parse().success).toEqual(false);
+        expect(v0.parse('').success).toEqual(false);
     });
 
     it('should test .optional method', () => {
-        const v = new Variable().optional();
+        const v0 = new Variable().optional();
 
         // .optional method tests
-        expect(v.parse()).toEqual(Result.success(undefined));
-        expect(v.parse('').success).toEqual(false);
+        expect(v0.parse()).toEqual(Result.success(undefined));
+        expect(v0.parse('').success).toEqual(false);
     });
 
     it('should test .defaultTo method', () => {
-        const v = new Variable<number>().defaultTo(10);
+        const v0 = new Variable<number>().defaultTo(10);
 
         // .defaultTo method tests
-        expect(v.parse()).toEqual(Result.success(10));
-        expect(v.parse('').success).toEqual(false);
+        expect(v0.parse()).toEqual(Result.success(10));
+        expect(v0.parse('').success).toEqual(false);
     });
 });
 
@@ -358,5 +366,33 @@ describe('JsonVariable', () => {
 
             expect(v6.parse(invalidJsonString).success).toEqual(false);
         });
+    });
+});
+
+describe('v.result', () => {
+    it('should throw missing name error', () => {
+        expect(() => v.result(v.string())).toThrow();
+    });
+
+    it('should give a FailureResult for missing result', () => {
+        expect(v.result(v.string().from('Hello'), v.data.new()).success).toBe(false);
+    });
+
+    it('should give a SuccessResult for found result', () => {
+        expect(v.result(v.string().from('Hello'), v.data.obj({ 'Hello': 'World' }))).toEqual(Result.success('World'));
+    });
+});
+
+describe('v.value', () => {
+    it('should throw missing name error', () => {
+        expect(() => v.value(v.string())).toThrow();
+    });
+
+    it('should throw a missing value error', () => {
+        expect(() => v.value(v.string().from('Hello'), v.data.new())).toThrow();
+    });
+
+    it('should return the found value', () => {
+        expect(v.value(v.string().from('Hello'), v.data.obj({ 'Hello': 'World' }))).toEqual('World');
     });
 });

@@ -131,13 +131,17 @@ const varObj = Object.seal({
 /**
  * Retrieves the parsed result of a variable from the provided data object.
  * @template V The type of the variable.
- * @param {string} name The name of the variable in the data object.
  * @param {V} variable The variable to parse from the data object.
  * @param {DataObject} data The data object containing the variable's value.
  * @returns {InferResults<V>} The parsed result of the variable.
  */
-const result = <V extends Variable<unknown>>(name: string, variable: V, data: DataObject = dataObj.env().toDataObject()): InferResults<V> => {
-    return variable.parse(data[name]) as InferResults<V>;
+const result = <V extends Variable<unknown>>(variable: V, data: DataObject | DataObjectBuilder = dataObj.env().toDataObject()): InferResults<V> => {
+    if (!variable.name)
+        throw new Error('Variable needs a name');
+
+    data = data instanceof DataObjectBuilder ? data.toDataObject() : data;
+
+    return variable.parse(data[variable.name]) as InferResults<V>;
 };
 
 /**
@@ -149,10 +153,11 @@ const result = <V extends Variable<unknown>>(name: string, variable: V, data: Da
  * @returns {InferValues<V>} The value of the variable.
  * @throws {SettingsError} If parsing fails.
  */
-const value = <V extends Variable<unknown>>(variable: V, data: DataObject = dataObj.env().toDataObject()): InferValues<V> => {
-
+const value = <V extends Variable<unknown>>(variable: V, data: DataObject | DataObjectBuilder = dataObj.env().toDataObject()): InferValues<V> => {
     if (!variable.name)
         throw new Error('Variable needs a name');
+
+    data = data instanceof DataObjectBuilder ? data.toDataObject() : data;
 
     const result = variable.parse(data[variable.name]);
 
