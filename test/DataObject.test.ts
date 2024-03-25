@@ -1,5 +1,9 @@
+import nodefs from 'fs';
 import { DataObjectBuilder } from '@/data';
 
+jest.mock('fs');
+
+const mockfs: jest.Mocked<typeof nodefs> = nodefs as jest.Mocked<typeof nodefs>;
 
 describe('DataObjectBuilder', () => {
 
@@ -81,9 +85,9 @@ KEY2=value2
 
             const json = JSON.stringify(data);
 
-            // mockfs.existsSync.mockReturnValueOnce(true);
+            mockfs.existsSync.mockReturnValueOnce(true);
 
-            // mockfs.readFileSync.mockReturnValueOnce(json);
+            mockfs.readFileSync.mockReturnValueOnce(json);
 
             let builder = new DataObjectBuilder();
 
@@ -93,7 +97,7 @@ KEY2=value2
         });
 
         test('missing true condition required file', () => {
-            // mockfs.existsSync.mockReturnValueOnce(false);
+            mockfs.existsSync.mockReturnValueOnce(false);
 
             let builder = new DataObjectBuilder();
 
@@ -101,7 +105,7 @@ KEY2=value2
         });
 
         test('missing false condition required file', () => {
-            // mockfs.existsSync.mockReturnValueOnce(false);
+            mockfs.existsSync.mockReturnValueOnce(false);
 
             let builder = new DataObjectBuilder();
 
@@ -109,7 +113,7 @@ KEY2=value2
         });
 
         test('missing true condition optional file', () => {
-            // mockfs.existsSync.mockReturnValueOnce(false);
+            mockfs.existsSync.mockReturnValueOnce(false);
 
             let builder = new DataObjectBuilder();
 
@@ -117,7 +121,7 @@ KEY2=value2
         });
 
         test('missing false condition optional file', () => {
-            // mockfs.existsSync.mockReturnValueOnce(false);
+            mockfs.existsSync.mockReturnValueOnce(false);
 
             let builder = new DataObjectBuilder();
 
@@ -128,27 +132,27 @@ KEY2=value2
         const filePath = '.env';
 
         test('existing file', () => {
-            //             const data = { key1: 'value1', key2: 'value2' };
+//             const data = { key1: 'value1', key2: 'value2' };
 
-            //             const dotenv = `
-            // key1=value1
-            // key2=value2
-            // `;
-            //             // mockfs.existsSync.mockReturnValueOnce(true);
+//             const dotenv = `
+// key1=value1
+// key2=value2
+// `;
+//             mockfs.existsSync.mockReturnValueOnce(true);
 
-            //             // mockfs.readFileSync.mockReturnValueOnce(dotenv);
+//             mockfs.readFileSync.mockReturnValueOnce(dotenv);
 
-            //             let builder = new DataObjectBuilder();
+//             let builder = new DataObjectBuilder();
 
-            //             const result = builder.addDotEnvFile(filePath);
+//             const result = builder.addDotEnvFile(filePath);
+            
+//             console.log('RESULT === BUILDER' , result === builder)
 
-            //             console.log('RESULT === BUILDER', result === builder);
-
-            //             expect(result.toDataObject()).toEqual(data);
+//             expect(result.toDataObject()).toEqual(data);
         });
 
         test('missing true condition required file', () => {
-            // mockfs.existsSync.mockReturnValueOnce(false);
+            mockfs.existsSync.mockReturnValueOnce(false);
 
             let builder = new DataObjectBuilder();
 
@@ -156,7 +160,7 @@ KEY2=value2
         });
 
         test('missing false condition required file', () => {
-            // mockfs.existsSync.mockReturnValueOnce(false);
+            mockfs.existsSync.mockReturnValueOnce(false);
 
             let builder = new DataObjectBuilder();
 
@@ -164,7 +168,7 @@ KEY2=value2
         });
 
         test('missing true condition optional file', () => {
-            // mockfs.existsSync.mockReturnValueOnce(false);
+            mockfs.existsSync.mockReturnValueOnce(false);
 
             let builder = new DataObjectBuilder();
 
@@ -172,51 +176,11 @@ KEY2=value2
         });
 
         test('missing false condition optional file', () => {
-            // mockfs.existsSync.mockReturnValueOnce(false);
+            mockfs.existsSync.mockReturnValueOnce(false);
 
             let builder = new DataObjectBuilder();
 
             expect(() => builder.addDotEnvFile(filePath, false, true)).not.toThrow();
         });
     });
-
-
-    // test('Read and parse .env file', () => {
-    //     const filePath = '.env';
-    //     const fileContent = 'key1=value1\nkey2=value2';
-    //     jest.spyOn(require('fs'), 'existsSync').mockReturnValue(true);
-    //     jest.spyOn(require('fs'), 'readFileSync').mockReturnValue(fileContent);
-
-    //     const result = builder.addDotEnvFile(filePath).toDataObject();
-
-    //     expect(result).toEqual({ key1: 'value1', key2: 'value2' });
-    // });
-
-    // test('Read and parse JSON file - file does not exist', () => {
-    //     const filePath = 'nonexistent.json';
-    //     jest.spyOn(require('fs'), 'existsSync').mockReturnValue(false);
-
-    //     expect(() => builder.addJsonFile(filePath, true, true).toDataObject()).not.toThrow();
-    // });
-
-    // test('Read and parse .env file - file does not exist', () => {
-    //     const filePath = 'nonexistent.env';
-    //     jest.spyOn(require('fs'), 'existsSync').mockReturnValue(false);
-
-    //     expect(() => builder.addDotEnvFile(filePath, true, true).toDataObject()).not.toThrow();
-    // });
-
-    // test('Read and parse JSON file - file missing and mustExist is true', () => {
-    //     const filePath = 'nonexistent.json';
-    //     jest.spyOn(require('fs'), 'existsSync').mockReturnValue(false);
-
-    //     expect(() => builder.addJsonFile(filePath, true, false).toDataObject()).toThrowError('Missing File nonexistent.json');
-    // });
-
-    // test('Read and parse .env file - file missing and mustExist is true', () => {
-    //     const filePath = 'nonexistent.env';
-    //     jest.spyOn(require('fs'), 'existsSync').mockReturnValue(false);
-
-    //     expect(() => builder.addDotEnvFile(filePath, true, false).toDataObject()).toThrowError('Missing File nonexistent.env');
-    // });
 });
