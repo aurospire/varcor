@@ -32,7 +32,6 @@ export type InferValues<T extends Variable<any> | VariableObject | Settings<any>
 
 
 const parseResults = (variables: VariableObject, data: DataObject, results: any = {}) => {
-
     for (const [key, node] of Object.entries(variables)) {
         if (node instanceof Variable) {
             const value = data[node.name ?? key];
@@ -45,7 +44,6 @@ const parseResults = (variables: VariableObject, data: DataObject, results: any 
             parseResults(node, data, subresults);
         }
     }
-
 };
 
 /**
