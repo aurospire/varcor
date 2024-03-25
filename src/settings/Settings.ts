@@ -13,7 +13,7 @@ import { SettingsError, SettingsIssues } from "./SettingsError";
 export type InferResults<T extends Variable<any> | VariableObject | Settings<any>> =
     T extends Variable<infer V> ? Result<V, string[]> :
     T extends Settings<infer V> ? InferValues<V> : {
-        [K in keyof T]: T[K] extends Variable<infer U> ? Result<U, string[]> : never;
+        [K in keyof T]: T[K] extends Variable<any> | VariableObject | Settings<any> ? InferResults<T[K]> : never;
     };
 
 /**
@@ -27,9 +27,26 @@ export type InferResults<T extends Variable<any> | VariableObject | Settings<any
 export type InferValues<T extends Variable<any> | VariableObject | Settings<any>> =
     T extends Variable<infer V> ? V :
     T extends Settings<infer V> ? InferValues<V> : {
-        [K in keyof T]: T[K] extends Variable<infer U> ? U : never;
+        [K in keyof T]: T[K] extends Variable<any> | VariableObject | Settings<any> ? InferValues<T[K]> : never;
     };
 
+
+const parseResults = (variables: VariableObject, data: DataObject, results: any = {}) => {
+
+    for (const [key, node] of Object.entries(variables)) {
+        if (node instanceof Variable) {
+            const value = data[node.name ?? key];
+            const result = node.parse(value);
+            results[key] = result;
+        }
+        else {
+            const subresults = (results[key] = {});
+
+            parseResults(node, data, subresults);
+        }
+    }
+
+};
 
 /**
  * The `Settings` class is responsible for parsing a collection of settings based on a provided map of `Variable` instances.
@@ -60,17 +77,12 @@ export class Settings<V extends VariableObject> {
      * @returns A `SettingsResults` object containing the parse results for each setting.
      */
     parseResults(data: DataObject | DataObjectBuilder): InferResults<V> {
-        if (data instanceof DataObjectBuilder) {
+        if (data instanceof DataObjectBuilder)
             data = data.toDataObject();
-        }
 
         const results: any = {};
 
-        for (const [key, variable] of Object.entries(this.#variables)) {
-            const value = data[variable.name ?? key];
-            const result = variable.parse(value);
-            results[key] = result;
-        }
+        parseResults(this.#variables, data, results);
 
         return results;
     }

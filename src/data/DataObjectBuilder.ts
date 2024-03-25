@@ -46,7 +46,12 @@ export class DataObjectBuilder {
      * @returns A new instance of `DataObjectBuilder` including the added object for chaining.
      */
     addObject(object: Record<string, any>): DataObjectBuilder {
-        const data = Object.fromEntries(Object.entries(object).map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)]));
+        const data = Object.fromEntries(
+            Object.entries(object).map(([key, value]) => [
+                key,
+                typeof value === 'string' ? value : JSON.stringify(value)
+            ])
+        );
 
         return this.addDataObject(data);
     }
@@ -69,8 +74,9 @@ export class DataObjectBuilder {
     addDotEnvFormat(env: string): DataObjectBuilder {
         const result = parseDotEnv(env);
 
-        if (result.success)
-            return this.addObject(result.value);
+        if (result.success) {
+            return this.addDataObject(result.value);
+        }
         else
             throw new Error(JSON.stringify(result.error));
     }
@@ -87,6 +93,7 @@ export class DataObjectBuilder {
         if (when) {
             if (nodefs.existsSync(path)) {
                 const data = nodefs.readFileSync(path).toString();
+
                 return this.addJsonFormat(data);
             }
             else if (!optional) {
@@ -107,13 +114,16 @@ export class DataObjectBuilder {
     addDotEnvFile(path: string, when: boolean = true, optional: boolean = true): DataObjectBuilder {
         if (when) {
             if (nodefs.existsSync(path)) {
+
                 const data = nodefs.readFileSync(path).toString();
+
                 return this.addDotEnvFormat(data);
             }
             else if (!optional) {
                 throw new Error(`Missing File ${path}`);
             }
         }
+
         return this;
     }
 
