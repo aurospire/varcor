@@ -13,14 +13,16 @@ export type Transformer<I, O> = (value: I) => Result<O, string[]>;
 export class Variable<T = never> {
     #optional: boolean;
     #default?: T;
+    #name?: string;
 
     /**
      * Constructs a new `Variable` instance.
      * @param from An existing `Variable` instance or an object specifying the initial `optional` and `default` values.
      */
-    constructor(from?: Variable<T> | { optional: boolean, default?: T; }) {
+    constructor(from?: Variable<T> | { optional: boolean, default?: T; name?: string; }) {
         this.#optional = from instanceof Variable ? from.#optional : (from?.optional ?? false);
         this.#default = from instanceof Variable ? from.#default : (from?.default ?? undefined);
+        this.#name = from instanceof Variable ? from.#name : (from?.name ?? undefined);
     }
 
     /**
@@ -53,6 +55,13 @@ export class Variable<T = never> {
      */
     get default(): T | undefined {
         return this.#default;
+    }
+
+    /**
+     * Returns the name value of the variable, if any.
+     */
+    get name(): string | undefined {
+        return this.#name;
     }
 
     /**
@@ -102,6 +111,16 @@ export class Variable<T = never> {
         const newVar = this.__clone();
         newVar.#optional = false;
         newVar.#default = value;
+        return newVar;
+    }
+
+    /**
+     * Sets the name of the variable that should be extracted and returns a new `Variable` instance reflecting this change.
+     * @returns A new `Variable` instance with the specified default name.
+     */
+    from(name: string): Variable<T> {
+        const newVar = this.__clone();
+        newVar.#name = name;
         return newVar;
     }
 
