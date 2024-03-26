@@ -17,15 +17,15 @@ export type InferValues<T extends Variable<any> | VariableObject> =
 
 /**
  * Recursively parses variables from a variable object and populates results with successfully parsed values.
- * @param {VariableObject} variables The variables or variable objects to parse.
+ * @param {VariableObject} vars The variables or variable objects to parse.
  * @param {DataObject} data The data object containing variable values.
  * @param {any} results The results object to populate with successfully parsed values.
  * @param {string[]} parent The parent keys in the object hierarchy.
  * @param {VariableIssue[]} issues The array to populate with parsing issues.
  * @private
  */
-const _parseValues = (variables: VariableObject, data: DataObject, results: any = {}, parent: string[] = [], issues: VariableIssue[] = []) => {
-    for (const [key, node] of Object.entries(variables)) {
+const _parseValues = (vars: VariableObject, data: DataObject, results: any = {}, parent: string[] = [], issues: VariableIssue[] = []) => {
+    for (const [key, node] of Object.entries(vars)) {
         if (node instanceof Variable) {
             const value = data[node.name ?? key];
 
@@ -49,28 +49,28 @@ const _parseValues = (variables: VariableObject, data: DataObject, results: any 
 /**
  * Parses a collection of variables from a data object and returns successfully parsed values.
  * Throws a VariableError if parsing encounters issues.
- * @param {VariableObject | Variable<unknown>} variables The variables or variable objects to parse.
+ * @param {VariableObject | Variable<unknown>} vars The variables or variable objects to parse.
  * @param {DataObject | DataObjectBuilder} data The data object or builder containing variable values.
  * @returns {InferValues<V>} The successfully parsed values.
  * @throws {VariableError} If parsing encounters issues.
  */
 export const parseValues = <V extends VariableObject | Variable<unknown>>(
-    variables: V,
+    vars: V,
     data: DataObject | DataObjectBuilder = DataObjectBuilder.env()
 ): InferValues<V> => {
     if (data instanceof DataObjectBuilder) data = data.toDataObject();
 
-    if (variables instanceof Variable) {
-        if (!variables.name)
+    if (vars instanceof Variable) {
+        if (!vars.name)
             throw new Error('Variable needs a name');
 
-        return variables.parse(data[variables.name]) as InferValues<V>;
+        return vars.parse(data[vars.name]) as InferValues<V>;
     }
     else {
         const results: any = {};
         const issues: VariableIssue[] = [];
 
-        _parseValues(variables, data, results, [], issues);
+        _parseValues(vars, data, results, [], issues);
 
         if (issues.length === 0)
             return results;

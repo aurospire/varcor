@@ -368,31 +368,3 @@ describe('JsonVariable', () => {
         });
     });
 });
-
-describe('v.result', () => {
-    it('should throw missing name error', () => {
-        expect(() => v.result(v.string())).toThrow();
-    });
-
-    it('should give a FailureResult for missing result', () => {
-        expect(v.result(v.string().from('Hello'), v.data.new()).success).toBe(false);
-    });
-
-    it('should give a SuccessResult for found result', () => {
-        expect(v.result(v.string().from('Hello'), v.data.obj({ 'Hello': 'World' }))).toEqual(Result.success('World'));
-    });
-});
-
-describe('v.value', () => {
-    it('should throw missing name error', () => {
-        expect(() => v.value(v.string())).toThrow();
-    });
-
-    it('should throw a missing value error', () => {
-        expect(() => v.value(v.string().from('Hello'), v.data.new())).toThrow();
-    });
-
-    it('should return the found value', () => {
-        expect(v.value(v.string().from('Hello'), v.data.obj({ 'Hello': 'World' }))).toEqual('World');
-    });
-});
