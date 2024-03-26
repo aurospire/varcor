@@ -8,3 +8,9 @@ export * from './StringVariable';
 export * from './JsonVariable';
 
 export * from './VariableObject';
+
+export * from './VariableError';
+export * from './VariableIssue';
+
+export * from './InferResults';
+export * from './InferValues';

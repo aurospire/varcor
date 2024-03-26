@@ -2,14 +2,12 @@ import { DateTime } from 'luxon';
 import { ZodType, ZodTypeDef } from 'zod';
 
 import { DateObject, DateType, Result } from '@/util';
-import { Settings, InferValues, InferResults } from '@/settings/Settings';
-import { DataObject, DataObjectBuilder } from '@/data';
+import { DataObjectBuilder } from '@/data';
 import {
     BooleanVariable, DateObjectVariable, EnumVariable, IntegerVariable,
     JsonValidator, JsonVariable, NumberVariable, StringVariable,
-    Variable, VariableObject
+    Variable, parseValues, parseResults, InferValues
 } from '@/variables';
-import { SettingsError } from '@/settings';
 
 /**
  * Creates a new instance of `NumberVariable` for parsing and validating numeric values.
@@ -95,13 +93,6 @@ const tsonVar = <Output = any, Def extends ZodTypeDef = ZodTypeDef, Input = Outp
 });
 
 /**
- * Initializes a new `Settings` instance with a specified set of variables for parsing settings.
- * @param variables A map of setting names to `Variable` instances.
- * @returns A `Settings` instance configured with the specified variables.
- */
-const settings = <V extends VariableObject>(variables: V): Settings<V> => new Settings<V>(variables);
-
-/**
  * Utility functions for creating and manipulating data objects in various formats.
  */
 const dataObj = Object.seal({
@@ -128,46 +119,6 @@ const varObj = Object.seal({
     tson: tsonVar,
 });
 
-/**
- * Retrieves the parsed result of a variable from the provided data object.
- * @template V The type of the variable.
- * @param {V} variable The variable to parse from the data object.
- * @param {DataObject} data The data object containing the variable's value.
- * @returns {InferResults<V>} The parsed result of the variable.
- */
-const result = <V extends Variable<unknown>>(variable: V, data: DataObject | DataObjectBuilder = dataObj.env().toDataObject()): InferResults<V> => {
-    if (!variable.name)
-        throw new Error('Variable needs a name');
-
-    data = data instanceof DataObjectBuilder ? data.toDataObject() : data;
-
-    return variable.parse(data[variable.name]) as InferResults<V>;
-};
-
-/**
- * Retrieves the value of a variable from the provided data object.
- * Throws a SettingsError if parsing fails.
- * @template V The type of the variable.
- * @param {V} variable The variable to retrieve from the data object.
- * @param {DataObject} data The data object containing the variable's value.
- * @returns {InferValues<V>} The value of the variable.
- * @throws {SettingsError} If parsing fails.
- */
-const value = <V extends Variable<unknown>>(variable: V, data: DataObject | DataObjectBuilder = dataObj.env().toDataObject()): InferValues<V> => {
-    if (!variable.name)
-        throw new Error('Variable needs a name');
-
-    data = data instanceof DataObjectBuilder ? data.toDataObject() : data;
-
-    const result = variable.parse(data[variable.name]);
-
-    if (result.success)
-        return result.value as InferValues<V>;
-    else
-        throw new SettingsError([{ key: [variable.name], issues: result.error }]);
-};
-
-
 export {
     numberVar as number,
     integerVar as integer,
@@ -179,11 +130,10 @@ export {
     enumVar as enum,
     jsonVar as json,
     tsonVar as tson,
-    result,
-    value,
+    parseResults as result,
+    parseValues as value,
     varObj as var,
     dataObj as data,
-    settings,
     InferValues as infer,
 };
 

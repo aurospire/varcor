@@ -173,4 +173,8 @@ export class DataObjectBuilder {
     toDataObject(): DataObject {
         return { ...this.#data };
     }
+
+    static env() {
+        return new DataObjectBuilder().addEnv();
+    }
 }
