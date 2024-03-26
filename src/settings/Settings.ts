@@ -1,7 +1,8 @@
 import { Result, ResultFailure } from "@/util";
 import { DataObjectBuilder, DataObject } from "@/data";
 import { Variable, VariableObject } from "@/variables";
-import { SettingsError, SettingsIssues } from "./SettingsError";
+import { SettingsError } from "./SettingsError";
+import { SettingsIssue } from "./SettingsIssues";
 
 /**
  * Maps each key in a `VariableObject` to a `Result`. If the variable is of type `Variable<U>`, it maps to `Result<U, string[]>`.
@@ -30,12 +31,13 @@ export type InferValues<T extends Variable<any> | VariableObject | Settings<any>
         [K in keyof T]: T[K] extends Variable<any> | VariableObject | Settings<any> ? InferValues<T[K]> : never;
     };
 
-
 const parseResults = (variables: VariableObject, data: DataObject, results: any = {}) => {
     for (const [key, node] of Object.entries(variables)) {
         if (node instanceof Variable) {
             const value = data[node.name ?? key];
+
             const result = node.parse(value);
+
             results[key] = result;
         }
         else {
@@ -45,6 +47,29 @@ const parseResults = (variables: VariableObject, data: DataObject, results: any 
         }
     }
 };
+
+const parseValues = (variables: VariableObject, data: DataObject, results: any = {}, parent: string[], issues: SettingsIssue[]) => {
+    for (const [key, node] of Object.entries(variables)) {
+        if (node instanceof Variable) {
+            const value = data[node.name ?? key];
+
+            const result = node.parse(value);
+
+            if (result.success) {
+                results[key] = result.value;
+            }
+            else {
+                issues.push({ key: [...parent, key], issues: result.error });
+            }
+        }
+        else {
+            const subresults = (results[key] = {});
+
+            parseValues(node, data, subresults, [...parent, key], issues);
+        }
+    }
+};
+
 
 /**
  * The `Settings` class is responsible for parsing a collection of settings based on a provided map of `Variable` instances.
@@ -94,31 +119,18 @@ export class Settings<V extends VariableObject> {
      * @throws `SettingsError` containing the issues encountered during parsing if any setting fails to parse.
      */
     parseValues(data: DataObject | DataObjectBuilder): InferValues<V> {
-        const results = this.parseResults(data);
-        const errors = this.filterIssues(results);
+        if (data instanceof DataObjectBuilder)
+            data = data.toDataObject();
 
-        if (errors.length) {
-            throw new SettingsError(errors, 'Settings had errors');
-        }
+        const results: any = {};
 
-        return Object.fromEntries(
-            Object.entries(results).map(([key, result]) => [key, (result as any).value])
-        ) as any;
-    }
+        const issues: SettingsIssue[] = [];
 
-    /**
-     * Filters through the parse results of each setting to identify and collect any issues encountered during parsing.
-     * This method is useful for aggregating error information from the parsing process, especially before throwing a `SettingsError`.
-     *
-     * @param results - The `SettingsResults` object containing the parse results for each setting.
-     * @returns An array of `SettingsIssues`, with each element containing the key of the setting and the associated error messages.
-     */
-    filterIssues(results: InferResults<V>): SettingsIssues[] {
-        return Object.entries(results)
-            .filter(([key, result]: [string, any]) => !result.success)
-            .map(([key, result]: [string, any]) => ({
-                key,
-                issues: result.error,
-            }));
+        parseValues(this.#variables, data, results, [], issues);
+
+        if (issues.length === 0)
+            return results;
+        else
+            throw new SettingsError(issues);
     }
 }

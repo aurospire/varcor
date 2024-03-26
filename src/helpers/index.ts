@@ -164,7 +164,7 @@ const value = <V extends Variable<unknown>>(variable: V, data: DataObject | Data
     if (result.success)
         return result.value as InferValues<V>;
     else
-        throw new SettingsError([{ key: variable.name, issues: result.error }]);
+        throw new SettingsError([{ key: [variable.name], issues: result.error }]);
 };
 
 

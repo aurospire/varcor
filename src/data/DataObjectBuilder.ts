@@ -1,6 +1,34 @@
 import nodefs from 'fs';
 import { parseDotEnv } from "@/dotenv";
 import { DataObject } from './DataObject';
+/**
+ * Type definition for file-related options used in file processing methods.
+ */
+export type FileOptions = {
+    /**
+     * Conditionally perform the file operation based on this boolean value.
+     */
+    when?: boolean;
+
+    /**
+     * Whether the file is required to exist, throwing an error if not found.
+     */
+    optional?: boolean;
+
+    /**
+     * A custom function to check if the file exists. Defaults to Node.js `fs.existsSync`.
+     * @param path The file path to check.
+     * @returns `true` if the file exists, `false` otherwise.
+     */
+    fileExists?: (path: string) => boolean;
+
+    /**
+     * A custom function to read the file content. Defaults to Node.js `fs.readFileSync`.
+     * @param path The file path to read.
+     * @returns The file content as a string.
+     */
+    readFile?: (path: string) => string;
+};
 
 /**
  * A builder class for constructing a `DataObject` from various data sources like environment variables,
@@ -82,50 +110,61 @@ export class DataObjectBuilder {
     }
 
     /**
-     * Reads and parses a JSON file and adds the resulting object to the data object.
-     * @param path The file path to the JSON file.
-     * @param when If false, skips adding the file content (defaults to true).
-     * @param optional If false, throws an error if the file does not exist (defaults to true).
-     * @throws An error if the file is missing and mustExist is true.
-     * @returns A new instance of `DataObjectBuilder` for chaining.
+     * Internal method to add file content to the builder after applying the specified processing based on the file type.
+     * This method centralizes the file reading logic and delegates the processing to the appropriate method based on the file type.
+     * 
+     * @param fileType The type of the file to dictate the processing method. Supported types are 'json' and 'dotenv'.
+     * @param path The file path to read. This is the location of the file to be processed and added to the data object.
+     * @param options Optional parameters to control the file processing behavior. This includes custom checks for file existence,
+     * custom file reading logic, and conditions on whether the file processing should occur.
+     * 
+     * @returns A new instance of `DataObjectBuilder` including the data from the processed file for chaining. If the file is not 
+     * required and doesn't exist, or the `when` condition is false, it returns the current instance without modification.
+     * 
+     * @throws Error if the file is required but does not exist, or if there is an error in processing the file content.
      */
-    addJsonFile(path: string, when: boolean = true, optional: boolean = true): DataObjectBuilder {
-        if (when) {
-            if (nodefs.existsSync(path)) {
-                const data = nodefs.readFileSync(path).toString();
+    #addFile(fileType: 'json' | 'dotenv', path: string, options?: FileOptions,): DataObjectBuilder {
+        const when = options?.when ?? true;
+        const optional = options?.optional ?? true;
+        const exists = options?.fileExists ?? nodefs.existsSync;
+        const readFile = options?.readFile ?? nodefs.readFileSync;
 
-                return this.addJsonFormat(data);
+        if (when) {
+            if (exists(path)) {
+                const data = readFile(path).toString();
+
+                if (fileType === 'json')
+                    return this.addJsonFormat(data);
+                else
+                    return this.addDotEnvFormat(data);
             }
-            else if (!optional) {
+            else if (!optional)
                 throw new Error(`Missing File ${path}`);
-            }
         }
+
         return this;
     }
 
     /**
-     * Reads and parses an environment variable file in `.env` format and adds the variables to the data object.
-     * @param path The file path to the `.env` file.
-     * @param when If false, skips adding the file content (defaults to true).
-     * @param optional If false, throws an error if the file does not exist (defaults to true).
-     * @throws An error if the file is missing and mustExist is true.
-     * @returns A new instance of `DataObjectBuilder` for chaining.
+     * Adds the content of a JSON file to the data object.
+     * @param path The file path to read.
+     * @param options Options to control file reading behavior.
+     * @returns A new instance of `DataObjectBuilder` including the parsed JSON file content for chaining.
      */
-    addDotEnvFile(path: string, when: boolean = true, optional: boolean = true): DataObjectBuilder {
-        if (when) {
-            if (nodefs.existsSync(path)) {
-
-                const data = nodefs.readFileSync(path).toString();
-
-                return this.addDotEnvFormat(data);
-            }
-            else if (!optional) {
-                throw new Error(`Missing File ${path}`);
-            }
-        }
-
-        return this;
+    addJsonFile(path: string, options?: FileOptions): DataObjectBuilder {
+        return this.#addFile('json', path, options);
     }
+
+    /**
+     * Adds the content of a `.env` file to the data object.
+     * @param path The file path to read.
+     * @param options Options to control file reading behavior.
+     * @returns A new instance of `DataObjectBuilder` including the parsed `.env` file content for chaining.
+     */
+    addDotEnvFile(path: string, options?: FileOptions): DataObjectBuilder {
+        return this.#addFile('dotenv', path, options);
+    }
+
 
     /**
      * Finalizes the building process and returns the constructed `DataObject`.
