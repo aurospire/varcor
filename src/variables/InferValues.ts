@@ -64,7 +64,12 @@ export const parseValues = <V extends VariableObject | Variable<unknown>>(
         if (!vars.name)
             throw new Error('Variable needs a name');
 
-        return vars.parse(data[vars.name]) as InferValues<V>;
+        const result = vars.parse(data[vars.name]);
+
+        if (result.success)
+            return result.value as InferValues<V>;
+        else
+            throw new VariableError([{ key: [vars.name], issues: result.error }]);
     }
     else {
         const results: any = {};
