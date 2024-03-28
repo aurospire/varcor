@@ -5,7 +5,7 @@ describe('Variable', () => {
     it('should test immutability', () => {
         const v0: Variable<number> = new Variable<number>();
         const v1 = v0.optional();
-        const v2 = v1.defaultTo(10);
+        const v2 = v1.default(10);
         const v3 = v0.from('NAME');
 
         // Immutability checks        
@@ -14,10 +14,10 @@ describe('Variable', () => {
         expect(v2.isOptional).toEqual(false);
         expect(v3.isOptional).toEqual(false);
 
-        expect(v0.default).toEqual(undefined);
-        expect(v1.default).toEqual(undefined);
-        expect(v2.default).toEqual(10);
-        expect(v3.default).toEqual(undefined);
+        expect(v0.defaultTo).toEqual(undefined);
+        expect(v1.defaultTo).toEqual(undefined);
+        expect(v2.defaultTo).toEqual(10);
+        expect(v3.defaultTo).toEqual(undefined);
 
         expect(v0.name).toEqual(undefined);
         expect(v1.name).toEqual(undefined);
@@ -42,7 +42,7 @@ describe('Variable', () => {
     });
 
     it('should test .defaultTo method', () => {
-        const v0 = new Variable<number>().defaultTo(10);
+        const v0 = new Variable<number>().default(10);
 
         // .defaultTo method tests
         expect(v0.parse()).toEqual(Result.success(10));

@@ -49,6 +49,9 @@ Marks a variable as optional. Type of variable becomes T | undefined
 
 // type becomes string | undefined
 const optionalVar = v.string().optional(); 
+
+// Optional Status can be retrieved from the .isOptional property
+console.log(optionalVar.isOptional);
 ```
 
 #### Setting Default Values
@@ -56,10 +59,25 @@ const optionalVar = v.string().optional();
 Sets a default value for the variable if value is undefined.
 
 ```typescript
-.defaultTo(value: T): Variable<T> 
+.default(value: T | (() => T) ): Variable<T> 
 
 // if value is not supplied, result in default value
-const defaultVar = v.string().defaultTo("defaultValue"); 
+const defaultedVar = v.string().default('defaultValue'); 
+
+// Default Value can be retrieved from the .defaultTo property
+console.log(defaultedVar.defaultTo);
+```
+#### Setting Variable Names
+
+Sets the name of the variable
+
+```typescript
+.from(name: string): Variable<T>
+
+const namedVar = v.string().from('NAME');
+
+// Variable Name can be retrieved from the .name property
+console.log(namedVar.name)
 ```
 
 #### Variable Unions with Else

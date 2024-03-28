@@ -91,8 +91,6 @@ export class DataObjectBuilder {
                 return result;
             }, [] as [string, any][]));
 
-        console.log('DATA', data);
-
         return this.data(data);
     }
 
