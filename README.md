@@ -176,7 +176,7 @@ const ENVIRONMENT = v.enum().value('development').value('production').value('tes
 
 You can use a single value enum - the `v.literal(value: string)` helper function:
 ```typescript
-const RED v.literal('RED');
+const RED = v.literal('RED');
 ```
 
 #### Date and Time Variables
