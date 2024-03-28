@@ -403,41 +403,6 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
      console.log(finalDataObject);
      ```
 
-## Settings
+## Type Inference and Parsing
 
-The `Settings` class is the centerpiece of varcor, tying all the individual pieces together into a cohesive system for managing application settings. It leverages the variables defined using varcor's helper functions, providing a structured and type-safe approach to parsing, validating, and accessing configuration data from various sources.
-
-### Overview
-
-The `Settings` class allows developers to define a schema of expected environment variables using the previously described variable helpers (`number`, `string`, `boolean`, etc.). This schema is then used to parse and validate the actual environment variables, ensuring they meet the specified criteria (type, presence, value constraints) before the application consumes them.
-
-### Defining Settings
-
-To define your application's settings, you create a new instance of the `Settings` class, passing in an object that maps setting names to their corresponding variables:
-
-```typescript
-import { v } from 'varcor';
-
-const appSettings = v.settings({
-  PORT: v.number().min(1024).max(65535).defaultTo(3000),
-  DATABASE_URL: v.string(),
-  FEATURE_FLAG: v.boolean().optional()
-});
-```
-
-In this example, `PORT` is expected to be a number between 1024 and 65535 with a default of 3000 if not specified, `DATABASE_URL` is a required string, and `FEATURE_FLAG` is an optional boolean.
-
-### Parsing and Accessing Settings
-
-Once defined, you can parse and access your settings from the environment or other data sources using the `parseValues` method. This method returns an object containing the parsed settings, throwing an error if any variable fails to meet its defined criteria:
-
-```typescript
-try {
-  const parsedSettings = appSettings.parseValues(process.env);
-  console.log('Configuration loaded successfully:', parsedSettings);
-} catch (error) {
-  console.error('Failed to load configuration:', error);
-}
-```
-
-The `parseValues` method ensures that all settings are validated according to their definitions. If validation passes, you get a type-safe and easily accessible configuration object. If validation fails, the error provides detailed information about which settings were invalid and why.
+- TODO
