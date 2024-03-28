@@ -77,11 +77,21 @@ export class DataObjectBuilder {
      */
     object(object: Record<string, any>): DataObjectBuilder {
         const data = Object.fromEntries(
-            Object.entries(object).map(([key, value]) => [
-                key,
-                typeof value === 'string' ? value : value instanceof Date ? value.toISOString() : typeof JSON.stringify(value)
-            ])
-        );
+            Object.entries(object).reduce((result, current) => {
+                let [key, value] = current;
+
+                if (value !== undefined) {
+                    if (value instanceof Date)
+                        value = value.toISOString();
+                    else if (typeof value !== 'string')
+                        value = JSON.stringify(value);
+
+                    result.push([key, value]);
+                }
+                return result;
+            }, [] as [string, any][]));
+
+        console.log('DATA', data);
 
         return this.data(data);
     }
