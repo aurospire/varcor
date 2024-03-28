@@ -40,6 +40,12 @@ const booleanVar = () => new BooleanVariable();
 const enumVar = () => new EnumVariable();
 
 /**
+ * Creates a new instance of `EnumVariable` for parsing and validating enumerated string values.
+ * @returns An instance of `EnumVariable`.
+ */
+const literalVar = <T extends string>(value: T) => new EnumVariable().value(value);
+
+/**
  * Resolves and creates a `DateObjectVariable` for parsing and validating date objects based on a specific format.
  * @param from The format to use for parsing date objects, either a predefined `DateType` or a custom `RegExp`.
  * @returns An instance of `DateObjectVariable` configured with the specified format.
@@ -131,10 +137,11 @@ export {
     jsdateVar as jsdate,
     luxdateVar as luxdate,
     enumVar as enum,
+    literalVar as literal,
     jsonVar as json,
     tsonVar as tson,
-    parseResults as result,
-    parseValues as value,
+    parseResults as results,
+    parseValues as values,
     varObj as var,
     dataObj as data,
     InferValues as infer,

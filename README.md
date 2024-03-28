@@ -174,6 +174,11 @@ import { v } from 'varcor';
 const ENVIRONMENT = v.enum().value('development').value('production').value('test');
 ```
 
+You can use a single value enum - the `v.literal(value: string)` helper function:
+```typescript
+const RED = v.literal('RED');
+```
+
 #### Date and Time Variables
 
 Define variables for date and time, supporting a generic DateTime object, and both JavaScript `Date` objects and `luxon` DateTime objects.

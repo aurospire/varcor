@@ -1,5 +1,5 @@
 import { DateObject, Result, Variable, v } from "@";
-import { z } from "zod";
+import { util, z } from "zod";
 
 describe('Variable', () => {
     it('should test immutability', () => {
@@ -202,6 +202,17 @@ describe('StringVariable', () => {
 });
 
 describe('EnumVariable', () => {
+
+    it('should parse literals', () => {
+        const v1 = v.literal('ORANGE');
+        const v2 = v.literal('ORANGE').insensitive();
+
+        expect(v1.parse('orange').success).toBe(false);
+        expect(v1.parse('ORANGE').success).toBe(true);
+        expect(v2.parse('orange')).toEqual(Result.success('ORANGE'));
+        expect(v2.parse('ORANGE')).toEqual(Result.success('ORANGE'));
+    });
+
     it('should parse valid enum values', () => {
         const v1 = v.enum().value('red').value('green').value('blue');
 
