@@ -12,15 +12,17 @@ export type Transformer<I, O> = (value: I) => Result<O, string[]>;
  */
 export class Variable<T = never> {
     #optional: boolean;
-    #default?: T;
+    #default?: T | (() => T);
+    #name?: string;
 
     /**
      * Constructs a new `Variable` instance.
      * @param from An existing `Variable` instance or an object specifying the initial `optional` and `default` values.
      */
-    constructor(from?: Variable<T> | { optional: boolean, default?: T; }) {
+    constructor(from?: Variable<T> | { optional: boolean, defaultTo?: T; name?: string; }) {
         this.#optional = from instanceof Variable ? from.#optional : (from?.optional ?? false);
-        this.#default = from instanceof Variable ? from.#default : (from?.default ?? undefined);
+        this.#default = from instanceof Variable ? from.#default : (from?.defaultTo ?? undefined);
+        this.#name = from instanceof Variable ? from.#name : (from?.name ?? undefined);
     }
 
     /**
@@ -34,8 +36,10 @@ export class Variable<T = never> {
         else {
             if (this.#optional)
                 return Result.success(undefined) as Result<T, string[]>;
-            else if (this.#default !== undefined)
-                return Result.success(this.#default) as Result<T, string[]>;
+            else if (this.#default !== undefined) {
+                const value = this.#default instanceof Function ? this.#default() : this.#default;
+                return Result.success(value) as Result<T, string[]>;
+            }
             else
                 return Result.failure(['is required']);
         }
@@ -51,8 +55,15 @@ export class Variable<T = never> {
     /**
      * Returns the default value of the variable, if any.
      */
-    get default(): T | undefined {
+    get defaultTo(): T | (() => T) | undefined {
         return this.#default;
+    }
+
+    /**
+     * Returns the name value of the variable, if any.
+     */
+    get name(): string | undefined {
+        return this.#name;
     }
 
     /**
@@ -98,10 +109,20 @@ export class Variable<T = never> {
      * @param value The default value to set.
      * @returns A new `Variable` instance with the specified default value.
      */
-    defaultTo(value: T): Variable<T> {
+    default(value: T | (() => T)): Variable<T> {
         const newVar = this.__clone();
         newVar.#optional = false;
         newVar.#default = value;
+        return newVar;
+    }
+
+    /**
+     * Sets the name of the variable that should be extracted and returns a new `Variable` instance reflecting this change.
+     * @returns A new `Variable` instance with the specified default name.
+     */
+    from(name: string): Variable<T> {
+        const newVar = this.__clone();
+        newVar.#name = name;
         return newVar;
     }
 
@@ -132,7 +153,7 @@ export class Variable<T = never> {
         return {
             type: this.type,
             optional: this.isOptional,
-            default: this.default,
+            default: this.defaultTo,
         };
     }
 
@@ -159,7 +180,7 @@ class AggregateVariable<T> extends Variable<T> {
     constructor(from?: Variable<T>, variable?: Variable<any>) {
         super({
             optional: from?.isOptional || variable?.isOptional || false,
-            default: from?.default || variable?.default
+            defaultTo: from?.defaultTo || variable?.defaultTo
         });
 
         if (from instanceof AggregateVariable)
@@ -248,7 +269,7 @@ class TransformedVariable<T> extends Variable<T> {
      * @returns A `Result` instance containing the transformed value or error messages.
      */
     override parse(value?: string | undefined): Result<T, string[]> {
-        if (value === undefined && (this.isOptional || this.default !== undefined))
+        if (value === undefined && (this.isOptional || this.defaultTo !== undefined))
             return super.parse(value);
 
         const result = this.#data.from.parse(value);

@@ -49,6 +49,9 @@ Marks a variable as optional. Type of variable becomes T | undefined
 
 // type becomes string | undefined
 const optionalVar = v.string().optional(); 
+
+// Optional Status can be retrieved from the .isOptional property
+console.log(optionalVar.isOptional);
 ```
 
 #### Setting Default Values
@@ -56,10 +59,25 @@ const optionalVar = v.string().optional();
 Sets a default value for the variable if value is undefined.
 
 ```typescript
-.defaultTo(value: T): Variable<T> 
+.default(value: T | (() => T) ): Variable<T> 
 
 // if value is not supplied, result in default value
-const defaultVar = v.string().defaultTo("defaultValue"); 
+const defaultedVar = v.string().default('defaultValue'); 
+
+// Default Value can be retrieved from the .defaultTo property
+console.log(defaultedVar.defaultTo);
+```
+#### Setting Variable Names
+
+Sets the name of the variable
+
+```typescript
+.from(name: string): Variable<T>
+
+const namedVar = v.string().from('NAME');
+
+// Variable Name can be retrieved from the .name property
+console.log(namedVar.name)
 ```
 
 #### Variable Unions with Else
@@ -249,24 +267,43 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
    ```typescript
    import { DataObjectBuilder } from './DataObjectBuilder';
 
-   let builder = v.data.new(); // or new DataObjectBuilder()
+   let builder = new DataObjectBuilder()
    ```
 
-2. **Adding Environment Variables**
+2. **Adding DataObjects or DataObjectBuilders**
+
+    Incorporate other DataObjects or DataObjectBuilders.
+
+    Signature
+    ```typescript
+    .addData(data: DataObject | DataObjectBuilder): 
+    ```
+
+    Example
+    ```typescript  
+    const dataObject: DataObject = {
+      PORT: '8080',
+      NAME: 'MyApp'
+    };
+
+    const dataBuilder = v.data.new().addDataObject({
+      TYPE: 'Open',
+      DATE: '2024-01-01'
+    })
+
+    builder = builder.data(appConfig)
+    builder = builder.data(dataBuilder);
+    ```
+
+3. **Adding Environment Variables**
 
    Easily include all current environment variables into your data object:
 
    ```typescript
-   builder = builder.addEnv();
-   ```
-   
-   You can additional start off with env using the helper method `v.data.env`
-   
-   ```typescript
-   let builder = v.data.env();
+   builder = builder.env();
    ```
 
-3. **Adding Data from an Object**
+4. **Adding Data from an Object**
 
    Incorporate configuration data from a regular JavaScript object. Non-string values are automatically converted to JSON strings:
 
@@ -277,36 +314,18 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
      features: { logging: true, debugMode: false },
    };
 
-   builder = builder.addObject(appConfig);
+   builder = builder.object(appConfig);
    ```
 
-    You can additional start off with an object using the helper method `v.data.obj`
-   
-   ```typescript
-   const builder = v.data.obj({
-     port: 8080,
-     name: "MyApp",
-     features: { logging: true, debugMode: false },
-   });
-   ```
-5. **Adding Data from a JSON String**
-
-   Parse a JSON string and include its data:
+5. **Adding Data from `json` string**
 
    ```typescript
    const jsonString = '{"apiUrl": "https://api.example.com", "timeout": 5000}';
-   builder = builder.addJsonFormat(jsonString);
+   builder = builder.json(jsonString);
    ```
+6. **Adding Data from `dotenv` string**
 
-    You can additional start off with a JSON string using the helper method `v.data.json`
-   
-   ```typescript
-   const builder = v.data.json('{"apiUrl": "https://api.example.com", "timeout": 5000}');
-   ```
-
-4. **Adding Data from a .env Format**
-
-   If you have a `.env` formatted string containing environment variables, you can parse and add those variables:
+   If you have a `dotenv` formatted string containing environment variables, you can parse and add those variables:
 
    ```typescript
    const envFormat = `
@@ -316,50 +335,73 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
    
    TIMEOUT="5000";
    `
-   builder = builder.addDotEnvFormat(envFormat);
+   builder = builder.dotenv(envFormat);
    ```
 
-5. **File Helpers**
-    `DataObjectBuilder` has two methods that allow importing from `.env` and `json` files with the following signature
+7. **File Helpers**
 
-    - `path`: The path of the file to import
-    - `when`: Conditional, if condition is `false` - skips adding the file content. Defaults to `true`
-    - `optional`: If `false`, throws an error if the file does not exist. Defaults to `true`
+    `DataObjectBuilder` has two methods that allow importing from `json` and `dotenv` files.
+
+    Each method takes the FileOptions type
     ```typescript
-    .addJsonFile(path: string, when: boolean = true, optional: boolean = true);
+    // Signatures
+    .jsonFile(path: string, options: FileOptions);
 
-    .addDotEnvFile(path: string, when: boolean = true, optional: boolean = true);
+    .dotenvFile(path: string,  options: FileOptions);
+
+    type FileOptions = {      
+        // if set, will determine whether to attempt to load file
+        when?: boolean;
+
+        // if false, will error if file doesn't exist
+        optional?: boolean; 
+        
+        // function to check if file exists, defaults to fs.existsSync
+        fileExists?: (path: string) => boolean; 
+
+        // function to read file contents, defaults to fs.readFile
+        readFile?: (path: string) => string; 
+    };
     
     //example
-
-    builder = builder
-        .addEnvFile('./production.env', process.env.NODE_ENV === 'production');
-        .addEnvFile('./development.env', process.env.NODE_ENV === 'development');
+    builder = builder.dotenvFile('./production.env', { when: process.env.NODE_ENV === 'production' });
+        
+    builder = builder.dotenvFile('./development.env', { when: process.env.NODE_ENV === 'development' });
     ```
 
-6. **Chaining**
+8. **Chaining**
     
     As `DataObjectBuilder` methods return a new builder instance, allowing for method chaining:
 
     ```typescript
     const finalDataObject = new DataObjectBuilder()
-        .addEnv()
-        .addObject(appConfig)
-        .addDotEnvFile('./.env')
-        .toDataObject();
+        .env()
+        .object(appConfig)
+        .dotenvFile('./.env')
+        .data({});
 
     console.log(finalDataObject);
     ```
 
-7. **Finalizing and Retrieving the DataObject**
+9. **Helper Methods**
+  All methods on DataObjectBuilder are available in v.data, to allow easy initializing
 
-   Once you've added all your data sources, finalize the builder to get your `DataObject`:
+    ```typescript
+    v.data.new();
+    v.data.env();
+    v.data.json(...);  
+    v.data.jsonFile(...);
+    ```
+    
+10. **Finalizing and Retrieving the DataObject**
 
-   ```typescript
-   const finalDataObject: DataObject = builder.toDataObject();
-   
-   console.log(finalDataObject);
-   ```
+    Once you've added all your data sources, finalize the builder to get your `DataObject`:
+
+     ```typescript
+     const finalDataObject: DataObject = builder.toDataObject();
+     
+     console.log(finalDataObject);
+     ```
 
 ## Settings
 
