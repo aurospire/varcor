@@ -3,12 +3,15 @@ import { Variable, VariableObject } from "@/variables";
 import { DataObject, DataObjectBuilder } from "@/data";
 
 /**
- * Represents the inferred results type of a collection of variables.
- * @template T The type of the variables or variable objects.
+ * Represents the inferred results type of a collection of variables or variable objects,
+ * including nested structures and arrays.
+ * @template T - A type extending `Variable<any>`, `VariableObject`, or `readonly VariableObject[]`.
  */
-export type InferResults<T extends Variable<unknown> | VariableObject> =
-    T extends Variable<infer V> ? Result<V, string[]>
-    : { [K in keyof T]: T[K] extends Variable<any> | VariableObject ? InferResults<T[K]> : never; };
+export type InferResults<T extends Variable<any> | VariableObject | readonly VariableObject[]> =
+    T extends Variable<infer V> ? Result<V, string[]> :
+    T extends readonly VariableObject[] ? { -readonly [K in keyof T]: T[K] extends Variable<any> | VariableObject | readonly VariableObject[] ? InferResults<T[K]> : never; } :
+    T extends VariableObject ? { -readonly [K in keyof T]: T[K] extends Variable<any> | VariableObject | readonly VariableObject[] ? InferResults<T[K]> : never; } :
+    never;
 
 /**
  * Recursively parses variables from a variable object and populates results.
@@ -18,20 +21,25 @@ export type InferResults<T extends Variable<unknown> | VariableObject> =
  * @private
  */
 const _parseResults = (vars: VariableObject, data: DataObject, results: any = {}) => {
-    for (const [key, node] of Object.entries(vars)) {
-        if (node instanceof Variable) {
-            const value = data[node.name ?? key];
+    for (const [key, subvars] of Object.entries(vars)) {
+        if (subvars instanceof Variable) {
+            const value = data[subvars.name ?? key];
 
-            const result = node.parse(value);
+            const result = subvars.parse(value);
 
             results[key] = result;
+        }
+        else if (subvars instanceof Array) {
+            results[key] = subvars.map(subvaritem => _parseResults(subvaritem, data, {}))
         }
         else {
             const subresults = (results[key] = {});
 
-            _parseResults(node, data, subresults);
+            _parseResults(subvars, data, subresults);
         }
     }
+
+    return results;
 };
 
 /**

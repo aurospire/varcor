@@ -4,16 +4,15 @@ import { VariableIssue } from "./VariableIssue";
 import { VariableError } from "./VariableError";
 
 /**
- * Similar to `InferResults`, but instead of mapping each key in a `VariableObject` to a `Result`, it maps each key
- * to the successfully parsed value or `never` if parsing was unsuccessful. This utility type focuses on the successful
- * parse outcomes, disregarding the errors, and is useful for obtaining a clean object with just the settings values,
- * assuming all parses were successful.
- *
- * @template T - A type extending `VariableObject`, representing a structured map of `Variable` instances.
+ * Represents the inferred values type of a collection of variables or variable objects,
+ * including nested structures and arrays.
+ * @template T - A type extending `Variable<any>`, `VariableObject`, or `readonly VariableObject[]`.
  */
-export type InferValues<T extends Variable<any> | VariableObject> =
-    T extends Variable<infer V> ? V
-    : { [K in keyof T]: T[K] extends Variable<any> | VariableObject ? InferValues<T[K]> : never; };
+export type InferValues<T extends Variable<any> | VariableObject | readonly VariableObject[]> =
+    T extends Variable<infer V> ? V :
+    T extends readonly VariableObject[] ? InferValues<T[number]> :
+    T extends VariableObject ? { -readonly [K in keyof T]: T[K] extends Variable<any> | VariableObject | readonly VariableObject[] ? InferValues<T[K]> : never; } :
+    never;
 
 /**
  * Recursively parses variables from a variable object and populates results with successfully parsed values.
@@ -25,11 +24,11 @@ export type InferValues<T extends Variable<any> | VariableObject> =
  * @private
  */
 const _parseValues = (vars: VariableObject, data: DataObject, results: any = {}, parent: string[] = [], issues: VariableIssue[] = []) => {
-    for (const [key, node] of Object.entries(vars)) {
-        if (node instanceof Variable) {
-            const value = data[node.name ?? key];
+    for (const [key, subvars] of Object.entries(vars)) {
+        if (subvars instanceof Variable) {
+            const value = data[subvars.name ?? key];
 
-            const result = node.parse(value);
+            const result = subvars.parse(value);
 
             if (result.success) {
                 results[key] = result.value;
@@ -38,10 +37,33 @@ const _parseValues = (vars: VariableObject, data: DataObject, results: any = {},
                 issues.push({ key: [...parent, key], issues: result.error });
             }
         }
+        else if (subvars instanceof Array) {
+            let arrayissues: VariableIssue[] = [];
+
+            for (let i = 0; i < subvars.length; i++) {
+                const subvaritem = subvars[i];
+                const subresults: any = {};
+                const subissues: VariableIssue[] = [];
+
+                _parseValues(subvaritem, data, subresults, [...parent, key, i.toString()], subissues);
+
+                if (subissues.length) {
+                    arrayissues.push(...subissues);
+                }
+                else {
+                    results[key] = subresults;
+                    arrayissues = [];
+                    break;
+                }
+            }
+
+            if (arrayissues.length)
+                issues.push(...arrayissues);
+        }
         else {
             const subresults = (results[key] = {});
 
-            _parseValues(node, data, subresults, [...parent, key], issues);
+            _parseValues(subvars, data, subresults, [...parent, key], issues);
         }
     }
 };

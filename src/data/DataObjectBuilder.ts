@@ -53,10 +53,12 @@ export class DataObjectBuilder {
 
     /**
      * Adds a data object to the current data being built.
-     * @param data A `DataObject` to add to the builder.
+     * @param data A `DataObject` or `DataObjectBuilder` to add to the builder.
      * @returns A new instance of `DataObjectBuilder` including the added data for chaining.
      */
-    addDataObject(data: DataObject): DataObjectBuilder {
+    addDataObject(data: DataObject | DataObjectBuilder): DataObjectBuilder {
+        if (data instanceof DataObjectBuilder) data = data.toDataObject();
+
         return new DataObjectBuilder(this.#data, data);
     }
 

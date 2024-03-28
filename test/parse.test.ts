@@ -1,15 +1,16 @@
-import { Result, v } from "@";
+import { InferResults, InferValues, Result, v } from "@";
 
 describe('parseResults', () => {
-    const mapResultsToSuccess = (parsedObject: Record<string, any>): Record<string, boolean> => {
-        return Object.fromEntries(
-            Object.entries(parsedObject).map(([key, value]) => {
-                if ('success' in value)
-                    return [key, value.success];
-                else
-                    return [key, mapResultsToSuccess(value)];
-            })
-        );
+    const mapResultsToSuccess = (parsedObject: Record<string | number, any>) => {
+        return (parsedObject instanceof Array) ?
+            parsedObject.map((item): any => mapResultsToSuccess(item)) : Object.fromEntries(
+                Object.entries(parsedObject).map(([key, value]): any => {
+                    if ('success' in value)
+                        return [key, value.success];
+                    else
+                        return [key, mapResultsToSuccess(value)];
+                })
+            );
     };
 
     it('should test Variables', () => {
@@ -62,6 +63,20 @@ describe('parseResults', () => {
         expect(mapResultsToSuccess(v.result(vars, valid))).toEqual({ a: true, b: { c: true, d: true }, e: { f: { g: true } } });
         expect(mapResultsToSuccess(v.result(vars, invalid))).toEqual({ a: false, b: { c: false, d: false }, e: { f: { g: false } } });
         expect(mapResultsToSuccess(v.result(vars, missing))).toEqual({ a: false, b: { c: false, d: true }, e: { f: { g: false } } });
+    });
+
+    it('should test Union Variable Object', () => {
+        const vars = {
+            a: [{ b: v.boolean(), c: v.integer() }, { d: v.string() }] as const
+        };
+
+        const first = v.data.obj({ b: true, c: 10 });
+        const second = v.data.obj({ d: 'hello' });
+        const both = first.addDataObject(second);
+
+        expect(mapResultsToSuccess(v.result(vars, first))).toEqual({ a: [{ b: true, c: true }, { d: false }] });
+        expect(mapResultsToSuccess(v.result(vars, second))).toEqual({ a: [{ b: false, c: false }, { d: true }] });
+        expect(mapResultsToSuccess(v.result(vars, both))).toEqual({ a: [{ b: true, c: true }, { d: true }] });
     });
 });
 
@@ -116,5 +131,19 @@ describe('parseValues', () => {
         expect(v.value(vars, valid)).toEqual({ a: true, b: { c: 'hello', d: 10 }, e: { f: { g: 'X' } } });
         expect(() => v.value(vars, invalid)).toThrow();
         expect(() => v.value(vars, missing)).toThrow();
+    });
+
+    it('should test Union Variable Object', () => {
+        const vars = {
+            a: [{ b: v.boolean(), c: v.integer() }, { d: v.string() }] as const
+        };
+
+        const first = v.data.obj({ b: true, c: 10 });
+        const second = v.data.obj({ d: 'hello' });
+        const both = first.addDataObject(second);
+
+        expect((v.value(vars, first))).toEqual({ a: { b: true, c: 10 } });
+        expect((v.value(vars, second))).toEqual({ a: { d: 'hello' } });
+        expect((v.value(vars, both))).toEqual({ a: { b: true, c: 10 } });
     });
 });
