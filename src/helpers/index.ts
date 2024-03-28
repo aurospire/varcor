@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { ZodType, ZodTypeDef } from 'zod';
 
 import { DateObject, DateType, Result } from '@/util';
-import { DataObjectBuilder } from '@/data';
+import { DataObject, DataObjectBuilder, FileOptions } from '@/data';
 import {
     BooleanVariable, DateObjectVariable, EnumVariable, IntegerVariable,
     JsonValidator, JsonVariable, NumberVariable, StringVariable,
@@ -97,10 +97,13 @@ const tsonVar = <Output = any, Def extends ZodTypeDef = ZodTypeDef, Input = Outp
  */
 const dataObj = Object.seal({
     new: () => new DataObjectBuilder(),
-    env: () => new DataObjectBuilder().addEnv(),
-    obj: (data: Record<string, any>) => new DataObjectBuilder().addObject(data),
-    json: (data: string) => new DataObjectBuilder().addJsonFormat(data),
-    dotenv: (data: string) => new DataObjectBuilder().addDotEnvFormat(data),
+    env: () => new DataObjectBuilder().env(),
+    data: (data: DataObject | DataObjectBuilder) => new DataObjectBuilder().data(data),
+    obj: (data: Record<string, any>) => new DataObjectBuilder().object(data),
+    json: (data: string) => new DataObjectBuilder().json(data),
+    dotenv: (data: string) => new DataObjectBuilder().dotenv(data),
+    jsonFile: (path: string, options?: FileOptions) => new DataObjectBuilder().jsonFile(path, options),
+    dotenvFile: (path: string, options?: FileOptions) => new DataObjectBuilder().dotenvFile(path, options)
 });
 
 /**
@@ -117,7 +120,7 @@ const varObj = Object.seal({
     enum: enumVar,
     json: jsonVar,
     tson: tsonVar,
-});
+} as const);
 
 export {
     numberVar as number,

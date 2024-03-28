@@ -72,7 +72,7 @@ describe('parseResults', () => {
 
         const first = v.data.obj({ b: true, c: 10 });
         const second = v.data.obj({ d: 'hello' });
-        const both = first.addDataObject(second);
+        const both = first.data(second);
 
         expect(mapResultsToSuccess(v.result(vars, first))).toEqual({ a: [{ b: true, c: true }, { d: false }] });
         expect(mapResultsToSuccess(v.result(vars, second))).toEqual({ a: [{ b: false, c: false }, { d: true }] });
@@ -140,7 +140,7 @@ describe('parseValues', () => {
 
         const first = v.data.obj({ b: true, c: 10 });
         const second = v.data.obj({ d: 'hello' });
-        const both = first.addDataObject(second);
+        const both = first.data(second);
 
         expect((v.value(vars, first))).toEqual({ a: { b: true, c: 10 } });
         expect((v.value(vars, second))).toEqual({ a: { d: 'hello' } });

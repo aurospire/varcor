@@ -50,7 +50,7 @@ const _parseResults = (vars: VariableObject, data: DataObject, results: any = {}
  */
 export const parseResults = <V extends VariableObject | Variable<unknown>>(
     vars: V,
-    data: DataObject | DataObjectBuilder = new DataObjectBuilder().addEnv()
+    data: DataObject | DataObjectBuilder = new DataObjectBuilder().env()
 ): InferResults<V> => {
     if (data instanceof DataObjectBuilder) data = data.toDataObject();
 

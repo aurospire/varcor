@@ -56,7 +56,7 @@ export class DataObjectBuilder {
      * @param data A `DataObject` or `DataObjectBuilder` to add to the builder.
      * @returns A new instance of `DataObjectBuilder` including the added data for chaining.
      */
-    addDataObject(data: DataObject | DataObjectBuilder): DataObjectBuilder {
+    data(data: DataObject | DataObjectBuilder): DataObjectBuilder {
         if (data instanceof DataObjectBuilder) data = data.toDataObject();
 
         return new DataObjectBuilder(this.#data, data);
@@ -66,8 +66,8 @@ export class DataObjectBuilder {
      * Adds the current environment variables to the data object.
      * @returns A new instance of `DataObjectBuilder` including the environment variables for chaining.
      */
-    addEnv(): DataObjectBuilder {
-        return this.addDataObject(process.env);
+    env(): DataObjectBuilder {
+        return this.data(process.env);
     }
 
     /**
@@ -75,15 +75,15 @@ export class DataObjectBuilder {
      * @param object A record object with key-value pairs to add. Values are stringified if not strings.
      * @returns A new instance of `DataObjectBuilder` including the added object for chaining.
      */
-    addObject(object: Record<string, any>): DataObjectBuilder {
+    object(object: Record<string, any>): DataObjectBuilder {
         const data = Object.fromEntries(
             Object.entries(object).map(([key, value]) => [
                 key,
-                typeof value === 'string' ? value : JSON.stringify(value)
+                typeof value === 'string' ? value : value instanceof Date ? value.toISOString() : typeof JSON.stringify(value)
             ])
         );
 
-        return this.addDataObject(data);
+        return this.data(data);
     }
 
     /**
@@ -91,8 +91,8 @@ export class DataObjectBuilder {
      * @param json A JSON-formatted string.
      * @returns A new instance of `DataObjectBuilder` including the parsed JSON object for chaining.
      */
-    addJsonFormat(json: string): DataObjectBuilder {
-        return this.addObject(JSON.parse(json));
+    json(json: string): DataObjectBuilder {
+        return this.object(JSON.parse(json));
     }
 
     /**
@@ -101,11 +101,11 @@ export class DataObjectBuilder {
      * @throws An error if parsing fails.
      * @returns A new instance of `DataObjectBuilder` including the parsed environment variables for chaining.
      */
-    addDotEnvFormat(env: string): DataObjectBuilder {
+    dotenv(env: string): DataObjectBuilder {
         const result = parseDotEnv(env);
 
         if (result.success) {
-            return this.addDataObject(result.value);
+            return this.data(result.value);
         }
         else
             throw new Error(JSON.stringify(result.error));
@@ -136,9 +136,9 @@ export class DataObjectBuilder {
                 const data = readFile(path).toString();
 
                 if (fileType === 'json')
-                    return this.addJsonFormat(data);
+                    return this.json(data);
                 else
-                    return this.addDotEnvFormat(data);
+                    return this.dotenv(data);
             }
             else if (!optional)
                 throw new Error(`Missing File ${path}`);
@@ -153,7 +153,7 @@ export class DataObjectBuilder {
      * @param options Options to control file reading behavior.
      * @returns A new instance of `DataObjectBuilder` including the parsed JSON file content for chaining.
      */
-    addJsonFile(path: string, options?: FileOptions): DataObjectBuilder {
+    jsonFile(path: string, options?: FileOptions): DataObjectBuilder {
         return this.#addFile('json', path, options);
     }
 
@@ -163,7 +163,7 @@ export class DataObjectBuilder {
      * @param options Options to control file reading behavior.
      * @returns A new instance of `DataObjectBuilder` including the parsed `.env` file content for chaining.
      */
-    addDotEnvFile(path: string, options?: FileOptions): DataObjectBuilder {
+    dotenvFile(path: string, options?: FileOptions): DataObjectBuilder {
         return this.#addFile('dotenv', path, options);
     }
 
@@ -177,6 +177,6 @@ export class DataObjectBuilder {
     }
 
     static env() {
-        return new DataObjectBuilder().addEnv();
+        return new DataObjectBuilder().env();
     }
 }

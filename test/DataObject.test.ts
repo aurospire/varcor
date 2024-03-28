@@ -8,9 +8,9 @@ describe('DataObjectBuilder', () => {
         const data2 = { key2: 'value2' };
 
         let builder1 = new DataObjectBuilder();
-        let builder2 = builder1.addDataObject(data1);
-        let builder3 = builder1.addDataObject(data2);
-        let builder4 = builder2.addDataObject(data2);
+        let builder2 = builder1.data(data1);
+        let builder3 = builder1.data(data2);
+        let builder4 = builder2.data(data2);
 
         expect(builder1.toDataObject()).toEqual({});
         expect(builder2.toDataObject()).toEqual(data1);
@@ -18,48 +18,48 @@ describe('DataObjectBuilder', () => {
         expect(builder4.toDataObject()).toEqual({ ...data1, ...data2 });
     });
 
-    test('.addDataObject', () => {
+    test('.data', () => {
         const data = { key1: 'value1', key2: 'value2' };
 
         let builder = new DataObjectBuilder();
 
-        builder = builder.addDataObject(data);
+        builder = builder.data(data);
 
         expect(builder.toDataObject()).toEqual(data);
     });
 
-    test('.addEnv', () => {
+    test('.env', () => {
         let builder = new DataObjectBuilder();
 
-        builder = builder.addEnv();
+        builder = builder.env();
 
         expect(builder.toDataObject()).toEqual(process.env);
     });
 
-    test('.addObject', () => {
+    test('.object', () => {
         const data = { key1: 10, key2: true };
 
         const expected = { key1: '10', key2: 'true' };
 
         let builder = new DataObjectBuilder();
 
-        builder = builder.addObject(data);
+        builder = builder.object(data);
 
         expect(builder.toDataObject()).toEqual(expected);
     });
 
-    test('.addJsonFormat', () => {
+    test('.json', () => {
         const data = { key1: 'value1', key2: 'value2' };
         const json = JSON.stringify(data);
 
         let builder = new DataObjectBuilder();
 
-        builder = builder.addJsonFormat(json);
+        builder = builder.json(json);
 
         expect(builder.toDataObject()).toEqual(data);
     });
 
-    test('.addDotEnvFormat', () => {
+    test('.dotenv', () => {
         const envString = `
 KEY1=value1
 KEY2=value2
@@ -68,12 +68,12 @@ KEY2=value2
 
         let builder = new DataObjectBuilder();
 
-        builder = builder.addDotEnvFormat(envString);
+        builder = builder.dotenv(envString);
 
         expect(builder.toDataObject()).toEqual(data);
     });
 
-    describe('.addJsonFile', () => {
+    describe('.jsonFile', () => {
         const filePath = 'test.json';
 
         test('existing file', () => {
@@ -83,7 +83,7 @@ KEY2=value2
 
             let builder = new DataObjectBuilder();
 
-            builder = builder.addJsonFile(filePath, { fileExists: () => true, readFile: () => json });
+            builder = builder.jsonFile(filePath, { fileExists: () => true, readFile: () => json });
 
             expect(builder.toDataObject()).toEqual(data);
         });
@@ -91,29 +91,29 @@ KEY2=value2
         test('missing true condition required file', () => {
             let builder = new DataObjectBuilder();
 
-            expect(() => builder.addJsonFile(filePath, { fileExists: () => false, when: true, optional: false })).toThrow();
+            expect(() => builder.jsonFile(filePath, { fileExists: () => false, when: true, optional: false })).toThrow();
         });
 
         test('missing false condition required file', () => {
             let builder = new DataObjectBuilder();
 
-            expect(() => builder.addJsonFile(filePath, { fileExists: () => false, when: false, optional: false })).not.toThrow();
+            expect(() => builder.jsonFile(filePath, { fileExists: () => false, when: false, optional: false })).not.toThrow();
         });
 
         test('missing true condition optional file', () => {
             let builder = new DataObjectBuilder();
 
-            expect(() => builder.addJsonFile(filePath, { fileExists: () => false, when: true, optional: true })).not.toThrow();
+            expect(() => builder.jsonFile(filePath, { fileExists: () => false, when: true, optional: true })).not.toThrow();
         });
 
         test('missing false condition optional file', () => {
             let builder = new DataObjectBuilder();
 
-            expect(() => builder.addJsonFile(filePath, { fileExists: () => false, when: false, optional: true })).not.toThrow();
+            expect(() => builder.jsonFile(filePath, { fileExists: () => false, when: false, optional: true })).not.toThrow();
         });
     });
 
-    describe('.addDotEnvFile', () => {
+    describe('.dotenvFile', () => {
         const filePath = '.env';
 
         test('existing file', () => {
@@ -126,7 +126,7 @@ KEY2=value2
 
             let builder = new DataObjectBuilder();
 
-            builder = builder.addDotEnvFile(filePath, { fileExists: () => true, readFile: () => dotenv });
+            builder = builder.dotenvFile(filePath, { fileExists: () => true, readFile: () => dotenv });
 
             expect(builder.toDataObject()).toEqual(data);
         });
@@ -134,25 +134,25 @@ KEY2=value2
         test('missing true condition required file', () => {
             let builder = new DataObjectBuilder();
 
-            expect(() => builder.addDotEnvFile(filePath, { fileExists: () => false, when: true, optional: false })).toThrow();
+            expect(() => builder.dotenvFile(filePath, { fileExists: () => false, when: true, optional: false })).toThrow();
         });
 
         test('missing false condition required file', () => {
             let builder = new DataObjectBuilder();
 
-            expect(() => builder.addDotEnvFile(filePath, { fileExists: () => false, when: false, optional: false })).not.toThrow();
+            expect(() => builder.dotenvFile(filePath, { fileExists: () => false, when: false, optional: false })).not.toThrow();
         });
 
         test('missing true condition optional file', () => {
             let builder = new DataObjectBuilder();
 
-            expect(() => builder.addDotEnvFile(filePath, { fileExists: () => false, when: true, optional: true })).not.toThrow();
+            expect(() => builder.dotenvFile(filePath, { fileExists: () => false, when: true, optional: true })).not.toThrow();
         });
 
         test('missing false condition optional file', () => {
             let builder = new DataObjectBuilder();
 
-            expect(() => builder.addDotEnvFile(filePath, { fileExists: () => false, when: false, optional: true })).not.toThrow();
+            expect(() => builder.dotenvFile(filePath, { fileExists: () => false, when: false, optional: true })).not.toThrow();
         });
     });
 });
