@@ -38,9 +38,9 @@ parse(value?: string | undefined): Result<T, string[]>
 ```
 
 ---
-Variables are Immutable - each of the following methods will create a new Variable:
+Variables are Immutable - the follow methods will create new variables.
 
-#### Making Variables Optional
+#### `.optional`
 
 Marks a variable as optional. Type of variable becomes T | undefined
 
@@ -54,7 +54,7 @@ const optionalVar = v.string().optional();
 console.log(optionalVar.isOptional);
 ```
 
-#### Setting Default Values
+#### `.default`
 
 Sets a default value for the variable if value is undefined.
 
@@ -67,7 +67,7 @@ const defaultedVar = v.string().default('defaultValue');
 // Default Value can be retrieved from the .defaultTo property
 console.log(defaultedVar.defaultTo);
 ```
-#### Setting Variable Names
+#### `.from`
 
 Sets the name of the variable
 
@@ -80,7 +80,7 @@ const namedVar = v.string().from('NAME');
 console.log(namedVar.name)
 ```
 
-#### Variable Unions with Else
+#### `.else<S>`
 
 Allows variable type unions
 
@@ -91,7 +91,7 @@ Allows variable type unions
 const stringOrNumber = v.string().else(v.number());
 ```
 
-#### Applying Transformations
+#### `.transform<S>`
 
 Applies a custom transformation function to the variable's value. An optional targetType can be provided for documentation purposes.
 
@@ -207,6 +207,14 @@ v.luxdate:(from?: DateType): Variable<DateTime>
 
 ```
 
+The DateType's each correspond to a ISO subset:
+- `date` - YYYY-MM-DD
+- `time` - HHHH:mm:SS[.LLL]
+- `datetime` - <date>>[(T| )<time>]
+- `tz`: Z | (+-)HH[:MM]
+- `timeTz` - <time>[<tz>]
+- `datetimeTz` - <date>[timeTz]
+
 Usage:
 ```typescript
 import { v } from 'varcor';
@@ -231,10 +239,10 @@ Usage:
 ```typescript
 import { v } from 'varcor';
 
-const CONFIG = v.json().validate();
+const CONFIG = v.json();
 ```
 
-#### Zod Schema Validation
+#### Zod Schema Variables
 
 Leverage `zod` schemas for complex JSON object validation.
 
@@ -281,7 +289,7 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
 
     Signature
     ```typescript
-    .addData(data: DataObject | DataObjectBuilder): 
+    .data(data: DataObject | DataObjectBuilder): 
     ```
 
     Example
@@ -304,13 +312,19 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
 
    Easily include all current environment variables into your data object:
 
+   Signature
    ```typescript
-   builder = builder.env();
+   .env();
    ```
 
 4. **Adding Data from an Object**
 
    Incorporate configuration data from a regular JavaScript object. Non-string values are automatically converted to JSON strings:
+
+   Signature
+   ```typescript
+   .object(data: Record<string, any>)
+   ```
 
    ```typescript
    const appConfig = {
@@ -323,7 +337,13 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
    ```
 
 5. **Adding Data from `json` string**
+    
+   Signature
+   ```typescript
+   .json(data: string);
+   ```
 
+   Example
    ```typescript
    const jsonString = '{"apiUrl": "https://api.example.com", "timeout": 5000}';
    builder = builder.json(jsonString);
@@ -332,6 +352,12 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
 
    If you have a `dotenv` formatted string containing environment variables, you can parse and add those variables:
 
+   Signature
+   ```typescript
+   .dotenv(data: string);
+   ```
+
+   Example
    ```typescript
    const envFormat = `
    # Variables
@@ -347,13 +373,16 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
 
     `DataObjectBuilder` has two methods that allow importing from `json` and `dotenv` files.
 
-    Each method takes the FileOptions type
+    
+    Signatures
     ```typescript
-    // Signatures
     .jsonFile(path: string, options: FileOptions);
 
     .dotenvFile(path: string,  options: FileOptions);
+    ```
 
+    Each method takes the FileOptions type
+    ```typescript
     type FileOptions = {      
         // if set, will determine whether to attempt to load file
         when?: boolean;
@@ -367,14 +396,17 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
         // function to read file contents, defaults to fs.readFile
         readFile?: (path: string) => string; 
     };
-    
+    ```
+
+    Example
+    ```typescript
     //example
     builder = builder.dotenvFile('./production.env', { when: process.env.NODE_ENV === 'production' });
         
     builder = builder.dotenvFile('./development.env', { when: process.env.NODE_ENV === 'development' });
     ```
 
-8. **Chaining**
+8. **Fluid Pattern**
     
     As `DataObjectBuilder` methods return a new builder instance, allowing for method chaining:
 
@@ -383,9 +415,8 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
         .env()
         .object(appConfig)
         .dotenvFile('./.env')
-        .data({});
-
-    console.log(finalDataObject);
+        .data({})
+        .toDataObject();
     ```
 
 9. **Helper Methods**
@@ -394,8 +425,12 @@ DataObjectBuilder is immutable, so each method creates a new DataObjectBuilder.
     ```typescript
     v.data.new();
     v.data.env();
-    v.data.json(...);  
+    v.data.data(...);
+    v.data.object(...);    
+    v.data.json(...);
+    v.data.dotenv(...);
     v.data.jsonFile(...);
+    v.data.dotenvFile(...);
     ```
     
 10. **Finalizing and Retrieving the DataObject**
