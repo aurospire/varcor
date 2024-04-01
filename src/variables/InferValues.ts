@@ -23,7 +23,7 @@ export type InferValues<T extends Variable<any> | VariableObject | readonly Vari
  * @param {VariableIssue[]} issues The array to populate with parsing issues.
  * @private
  */
-const _parseValues = (vars: VariableObject, data: DataObject, results: any = {}, parent: string[] = [], issues: VariableIssue[] = []) => {
+const _parseValues = (vars: VariableObject, data: DataObject, results: any = {}, parent: Array<string | number> = [], issues: VariableIssue[] = []) => {
     for (const [key, subvars] of Object.entries(vars)) {
         if (subvars instanceof Variable) {
             const value = data[subvars.name ?? key];
@@ -45,7 +45,7 @@ const _parseValues = (vars: VariableObject, data: DataObject, results: any = {},
                 const subresults: any = {};
                 const subissues: VariableIssue[] = [];
 
-                _parseValues(subvaritem, data, subresults, [...parent, key, i.toString()], subissues);
+                _parseValues(subvaritem, data, subresults, [...parent, key, i], subissues);
 
                 if (subissues.length) {
                     arrayissues.push(...subissues);
