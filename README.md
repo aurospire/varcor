@@ -19,10 +19,9 @@ type ResultFailure<F> = { success: false; error: F; };
 type Result<T, F> = ResultSuccess<T> | ResultFailure<F>;
 
 // Helper methods
-const Result = Object.seal({
-    success: <T>(value: T): ResultSuccess<T> => ({ success: true, value }),
-    failure: <F>(error: F): ResultFailure<F> => ({ success: false, error })
-} as const);
+Result.success: <T>(value: T) => ResultSuccess<T>;
+Result.failure: <F>(error: F) => ResultFailure<F>;
+
 ```
 
 ## Variables

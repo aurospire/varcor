@@ -31,8 +31,8 @@ const makeRegex = (value: string): RegExp => new RegExp(`^${value}$`, 'i');
 /**
  * Regular expressions for date and time formats.
  */
-const regex = Object.seal({
-    raw: Object.seal({
+const regex = Object.freeze({
+    raw: Object.freeze({
         date: date,
         time: time,
         timeTz: timeTz,
@@ -120,7 +120,7 @@ const defaults = {
     minute: 0,
     second: 0,
     ms: 0,
-    tz: Object.seal({ type: 'local'}) satisfies TimeZone
+    tz: Object.freeze({ type: 'local'}) satisfies TimeZone
 } as const;
 
 /**
@@ -260,7 +260,7 @@ const parseDateObject = (value: string, format: RegExp | DateType = 'datetimeTz'
 /**
  * Utility functions for working with DateObjects.
  */
-export const DateObject = Object.seal({
+export const DateObject = Object.freeze({
     /**
      * Validates a raw date object and returns a Result object containing either the validated DateObject or validation issues.
      * @param value The raw date object to validate.

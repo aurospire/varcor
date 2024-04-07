@@ -20,7 +20,7 @@ export type Result<T, F> = ResultSuccess<T> | ResultFailure<F>;
 /**
  * Utility functions for creating Result objects.
  */
-export const Result = Object.seal({
+export const Result = Object.freeze({
     /**
      * Creates a successful Result object with the given value.
      * @template T The type of the value.
