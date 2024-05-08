@@ -180,7 +180,8 @@ class AggregateVariable<T> extends Variable<T> {
     constructor(from?: Variable<T>, variable?: Variable<any>) {
         super({
             optional: from?.isOptional || variable?.isOptional || false,
-            defaultTo: from?.defaultTo || variable?.defaultTo
+            defaultTo: from?.defaultTo || variable?.defaultTo,
+            name: from?.name || variable?.name
         });
 
         if (from instanceof AggregateVariable)
@@ -254,6 +255,13 @@ class TransformedVariable<T> extends Variable<T> {
             this.#data = from.#data;
         else
             this.#data = { from: new Variable<any>(), transform: () => { throw new Error('Invalid transform'); } };
+    }
+
+    /**
+     * Overrides the `name` getter to return the variable name
+     */
+    override get name(): string | undefined {
+        return super.name ?? this.#data.from.name;
     }
 
     /**

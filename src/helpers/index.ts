@@ -101,21 +101,21 @@ const tsonVar = <Output = any, Def extends ZodTypeDef = ZodTypeDef, Input = Outp
 /**
  * Utility functions for creating and manipulating data objects in various formats.
  */
-const dataObj = Object.seal({
+const dataObj = Object.freeze({
     new: () => new DataObjectBuilder(),
     env: () => new DataObjectBuilder().env(),
     data: (data: DataObject | DataObjectBuilder) => new DataObjectBuilder().data(data),
-    obj: (data: Record<string, any>) => new DataObjectBuilder().object(data),
+    object: (data: Record<string, any>) => new DataObjectBuilder().object(data),
     json: (data: string) => new DataObjectBuilder().json(data),
     dotenv: (data: string) => new DataObjectBuilder().dotenv(data),
     jsonFile: (path: string, options?: FileOptions) => new DataObjectBuilder().jsonFile(path, options),
     dotenvFile: (path: string, options?: FileOptions) => new DataObjectBuilder().dotenvFile(path, options)
-});
+} as const);
 
 /**
  * Utility functions for creating variables of different types.
  */
-const varObj = Object.seal({
+const varObj = Object.freeze({
     number: numberVar,
     integer: integerVar,
     string: stringVar,

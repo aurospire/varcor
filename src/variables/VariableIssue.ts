@@ -5,9 +5,9 @@
  */
 export type VariableIssue = {
     /**
-     * The key of the setting for which issues were encountered.
+     * The key of the setting for which issues were encountered - strings for keys, numbers for indexes of union
      */
-    key: string[];
+    key: Array<string | number>;
 
     /**
      * An array of strings, each describing a specific issue encountered with the setting identified by `key`.

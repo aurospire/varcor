@@ -33,9 +33,9 @@ describe('parseResults', () => {
             d: v.string().from('NAME')
         };
 
-        const valid = v.data.obj({ a: true, B: 'X', NAME: 'hello' });
-        const invalid = v.data.obj({ a: 10, B: false, c: null, NAME: undefined });
-        const missing = v.data.obj({});
+        const valid = v.data.object({ a: true, B: 'X', NAME: 'hello' });
+        const invalid = v.data.object({ a: 10, B: false, c: null, NAME: undefined });
+        const missing = v.data.object({});
 
         expect(mapResultsToSuccess(v.results(vars, valid))).toEqual({ a: true, b: true, c: true, d: true });
         expect(mapResultsToSuccess(v.results(vars, invalid))).toEqual({ a: false, b: false, c: false, d: false });
@@ -56,9 +56,9 @@ describe('parseResults', () => {
             }
         };
 
-        const valid = v.data.obj({ a: true, C: 'hello', D: 10, g: 'X' });
-        const invalid = v.data.obj({ a: 10, C: undefined, D: 'hello', g: 'Z' });
-        const missing = v.data.obj({});
+        const valid = v.data.object({ a: true, C: 'hello', D: 10, g: 'X' });
+        const invalid = v.data.object({ a: 10, C: undefined, D: 'hello', g: 'Z' });
+        const missing = v.data.object({});
 
         expect(mapResultsToSuccess(v.results(vars, valid))).toEqual({ a: true, b: { c: true, d: true }, e: { f: { g: true } } });
         expect(mapResultsToSuccess(v.results(vars, invalid))).toEqual({ a: false, b: { c: false, d: false }, e: { f: { g: false } } });
@@ -70,8 +70,8 @@ describe('parseResults', () => {
             a: [{ b: v.boolean(), c: v.integer() }, { d: v.string() }] as const
         };
 
-        const first = v.data.obj({ b: true, c: 10 });
-        const second = v.data.obj({ d: 'hello' });
+        const first = v.data.object({ b: true, c: 10 });
+        const second = v.data.object({ d: 'hello' });
         const both = first.data(second);
 
         expect(mapResultsToSuccess(v.results(vars, first))).toEqual({ a: [{ b: true, c: true }, { d: false }] });
@@ -101,9 +101,9 @@ describe('parseValues', () => {
             d: v.string().from('NAME')
         };
 
-        const valid = v.data.obj({ a: true, B: 'X', NAME: 'hello' });
-        const invalid = v.data.obj({ a: 10, B: false, c: null, NAME: undefined });
-        const missing = v.data.obj({});
+        const valid = v.data.object({ a: true, B: 'X', NAME: 'hello' });
+        const invalid = v.data.object({ a: 10, B: false, c: null, NAME: undefined });
+        const missing = v.data.object({});
 
         expect(v.values(vars, valid)).toEqual({ a: true, b: 'X', c: undefined, d: 'hello' });
         expect(() => v.values(vars, invalid)).toThrow();
@@ -124,9 +124,9 @@ describe('parseValues', () => {
             }
         };
 
-        const valid = v.data.obj({ a: true, C: 'hello', D: 10, g: 'X' });
-        const invalid = v.data.obj({ a: 10, C: undefined, D: 'hello', g: 'Z' });
-        const missing = v.data.obj({});
+        const valid = v.data.object({ a: true, C: 'hello', D: 10, g: 'X' });
+        const invalid = v.data.object({ a: 10, C: undefined, D: 'hello', g: 'Z' });
+        const missing = v.data.object({});
 
         expect(v.values(vars, valid)).toEqual({ a: true, b: { c: 'hello', d: 10 }, e: { f: { g: 'X' } } });
         expect(() => v.values(vars, invalid)).toThrow();
@@ -138,8 +138,8 @@ describe('parseValues', () => {
             a: [{ b: v.boolean(), c: v.integer() }, { d: v.string() }] as const
         };
 
-        const first = v.data.obj({ b: true, c: 10 });
-        const second = v.data.obj({ d: 'hello' });
+        const first = v.data.object({ b: true, c: 10 });
+        const second = v.data.object({ d: 'hello' });
         const both = first.data(second);
 
         expect((v.values(vars, first))).toEqual({ a: { b: true, c: 10 } });
