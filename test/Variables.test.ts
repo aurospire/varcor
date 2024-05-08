@@ -48,6 +48,16 @@ describe('Variable', () => {
         expect(v0.parse()).toEqual(Result.success(10));
         expect(v0.parse('').success).toEqual(false);
     });
+
+    it('should test .name method', () => {
+        const v0 = new Variable<number>().from('Hello');
+        const v1 = v0.transform(value => Result.success(Boolean(value)));
+        const v2 = v1.from('Goodbye');
+
+        expect(v0.name).toBe('Hello')
+        expect(v1.name).toBe('Hello')
+        expect(v2.name).toBe('Goodbye')
+    });
 });
 
 describe('BooleanVariable', () => {
