@@ -30,8 +30,7 @@
         "vigil": "nodemon -e ts,js,tsx,jsx,json --watch src --watch 'package*.json' --watch test --exec 'tsc -p . && jest --config test/jest.config.ts || exit 1'"
     },
     "dependencies": {
-        "luxon": "^3.4.4",
-        "zod": "^3.22.4"
+        "luxon": "^3.4.4"
     },
     "devDependencies": {
         "@types/jest": "^29.5.11",
@@ -49,6 +48,7 @@
         "typescript": "^5.3.3",
         "webpack": "^5.89.0",
         "webpack-cli": "^5.1.4",
-        "webpack-node-externals": "^3.0.0"
+        "webpack-node-externals": "^3.0.0",
+        "zod": "^3.23.8"
     }
 }

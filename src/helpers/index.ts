@@ -1,5 +1,4 @@
 import { DateTime } from 'luxon';
-import { ZodType, ZodTypeDef } from 'zod';
 
 import { DateObject, DateType, Result } from '@/util';
 import { DataObject, DataObjectBuilder, FileOptions } from '@/data';
@@ -85,20 +84,6 @@ const luxdateVar = (from?: RegExp | DateType): Variable<DateTime> => resolveDate
 const jsonVar = <T = any>(validator?: JsonValidator<T>) => validator ? new JsonVariable<T>().validate(validator) : new JsonVariable<T>();
 
 /**
- * Creates a new `JsonVariable` for parsing and validating objects based on a `zod` schema.
- * @param type A `zod` schema for validation.
- * @returns A `JsonVariable` instance configured with the `zod` schema validation.
- */
-const tsonVar = <Output = any, Def extends ZodTypeDef = ZodTypeDef, Input = Output>(type: ZodType<Output, Def, Input>) => new JsonVariable<Output>().validate(data => {
-    const result = type.safeParse(data);
-
-    if (result.success)
-        return Result.success(result.data);
-    else
-        return Result.failure(result.error.issues.map(issue => `${issue.path}: ${issue.message}`));
-});
-
-/**
  * Utility functions for creating and manipulating data objects in various formats.
  */
 const dataObj = Object.freeze({
@@ -125,7 +110,6 @@ const varObj = Object.freeze({
     luxdate: luxdateVar,
     enum: enumVar,
     json: jsonVar,
-    tson: tsonVar,
 } as const);
 
 export {
@@ -138,8 +122,7 @@ export {
     luxdateVar as luxdate,
     enumVar as enum,
     literalVar as literal,
-    jsonVar as json,
-    tsonVar as tson,
+    jsonVar as json,    
     parseResults as results,
     parseValues as values,
     varObj as var,

@@ -1,4 +1,4 @@
-import { DateObject, Result, Variable, v } from "@";
+import { DateObject, JsonValidator, Result, Variable, v } from "@";
 import { util, z } from "zod";
 
 describe('Variable', () => {
@@ -53,14 +53,14 @@ describe('Variable', () => {
         const v0 = new Variable<number>().from('A');
         const v1 = v0.transform(value => Result.success(Boolean(value)));
         const v2 = v1.from('B');
-        const v3 = v2.else(v0.from('C'))
-        const v4 = v3.from('D')
+        const v3 = v2.else(v0.from('C'));
+        const v4 = v3.from('D');
 
-        expect(v0.name).toBe('A')
-        expect(v1.name).toBe('A')
-        expect(v2.name).toBe('B')
-        expect(v3.name).toBe('B')
-        expect(v4.name).toBe('D')
+        expect(v0.name).toBe('A');
+        expect(v1.name).toBe('A');
+        expect(v2.name).toBe('B');
+        expect(v3.name).toBe('B');
+        expect(v4.name).toBe('D');
     });
 });
 
@@ -370,13 +370,24 @@ describe('JsonVariable', () => {
     });
 
     describe('tsonVar', () => {
-        it('should parse valid JSON string with ZodType validator', () => {
-            const zodType = z.object({
-                name: z.string(),
-                age: z.number(),
-            });
+        const zodType = z.object({
+            name: z.string(),
+            age: z.number(),
+        });
 
-            const v5 = v.tson(zodType);
+        const zodValidator = (data: any) => {
+            const result = zodType.safeParse(data);
+
+            if (result.success)
+                return Result.success(result.data);
+            else
+                return Result.failure(result.error.issues.map(issue => issue.message));
+
+        };
+
+        it('should parse valid JSON string with ZodType validator', () => {
+
+            const v5 = v.json(zodValidator);
 
             expect(v5.parse(validJsonString)).toEqual(Result.success(JSON.parse(validJsonString)));
         });
@@ -387,7 +398,7 @@ describe('JsonVariable', () => {
                 age: z.number(),
             });
 
-            const v6 = v.tson(zodType);
+            const v6 = v.json(zodValidator);
 
             expect(v6.parse(invalidJsonString).success).toEqual(false);
         });
